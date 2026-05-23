@@ -1,13 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { featuredProjects } from "./data/projects";
+import { useEffect, useState } from "react";
+
+import { db } from "../lib/firebase";
+
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+} from "firebase/firestore";
 
 export default function Home() {
 
-  const [search, setSearch] = useState("");
-  const [projects, setProjects] = useState(featuredProjects);
+  const [projects, setProjects] = useState<any[]>([]);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -15,11 +21,30 @@ export default function Home() {
   const [image, setImage] = useState("");
   const [tag, setTag] = useState("");
 
-  const addProject = () => {
+  useEffect(() => {
+
+    const unsubscribe = onSnapshot(
+      collection(db, "projects"),
+      (snapshot) => {
+
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setProjects(data);
+      }
+    );
+
+    return () => unsubscribe();
+
+  }, []);
+
+  const addProject = async () => {
 
     if (!title || !description) return;
 
-    const newProject = {
+    await addDoc(collection(db, "projects"), {
       title,
       description,
       badge: "New",
@@ -27,9 +52,7 @@ export default function Home() {
       link,
       image,
       color: "from-cyan-400 to-blue-500",
-    };
-
-    setProjects([newProject, ...projects]);
+    });
 
     setTitle("");
     setDescription("");
@@ -37,11 +60,6 @@ export default function Home() {
     setImage("");
     setTag("");
   };
-
-  const filteredProjects = projects.filter((project) =>
-    project.title.toLowerCase().includes(search.toLowerCase()) ||
-    project.tags.join(" ").toLowerCase().includes(search.toLowerCase())
-  );
 
   return (
     <main className="min-h-screen bg-[#020817] text-white px-6 py-10">
@@ -73,19 +91,6 @@ export default function Home() {
         <p className="mt-6 text-xl text-gray-300 max-w-3xl mx-auto">
           Discover Early Web3 Opportunities, Nodes, Testnets & Airdrops Before Everyone Else.
         </p>
-
-      </section>
-
-      {/* Search */}
-      <section className="max-w-2xl mx-auto mt-20">
-
-        <input
-          type="text"
-          placeholder="Search projects..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-6 py-5 rounded-2xl bg-white/5 border border-white/10 outline-none"
-        />
 
       </section>
 
@@ -157,10 +162,10 @@ export default function Home() {
 
         <div className="grid md:grid-cols-3 gap-10">
 
-          {filteredProjects.map((project) => (
+          {projects.map((project) => (
 
             <div
-              key={project.title}
+              key={project.id}
               className="bg-white/5 border border-purple-500/20 rounded-3xl overflow-hidden"
             >
 
@@ -192,7 +197,7 @@ export default function Home() {
 
                 <div className="flex gap-3 flex-wrap mt-6">
 
-                  {project.tags.map((tag) => (
+                  {project.tags?.map((tag: string) => (
 
                     <span
                       key={tag}
