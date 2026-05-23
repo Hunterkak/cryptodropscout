@@ -1,7 +1,18 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import { featuredProjects, airdrops } from "./data/projects";
 
 export default function Home() {
+
+  const [search, setSearch] = useState("");
+
+  const filteredProjects = featuredProjects.filter((project) =>
+    project.title.toLowerCase().includes(search.toLowerCase()) ||
+    project.tags.join(" ").toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <main className="min-h-screen bg-[#020817] text-white overflow-hidden">
 
@@ -32,7 +43,6 @@ export default function Home() {
 
         </div>
 
-        {/* Mobile Menu */}
         <div className="md:hidden flex gap-4 text-sm">
 
           <a href="/" className="bg-white/10 px-3 py-2 rounded-xl">
@@ -82,32 +92,20 @@ export default function Home() {
 
       </section>
 
-      {/* Stats */}
-      <section className="grid md:grid-cols-4 gap-8 px-8 pb-28">
+      {/* Search */}
+      <section className="px-8 pb-20">
 
-        {[
-          ["150+", "Active Airdrops"],
-          ["80+", "Testnets"],
-          ["40+", "Node Projects"],
-          ["24/7", "Daily Updates"],
-        ].map(([number, label]) => (
+        <div className="max-w-2xl mx-auto">
 
-          <div
-            key={label}
-            className="bg-white/5 border border-white/10 rounded-3xl p-10 text-center backdrop-blur-xl hover:scale-105 transition"
-          >
+          <input
+            type="text"
+            placeholder="Search projects, nodes, testnets..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full px-6 py-5 rounded-2xl bg-white/5 border border-white/10 outline-none text-white placeholder:text-gray-500 focus:border-cyan-400 transition"
+          />
 
-            <h2 className="text-6xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-              {number}
-            </h2>
-
-            <p className="mt-4 text-gray-300 text-lg">
-              {label}
-            </p>
-
-          </div>
-
-        ))}
+        </div>
 
       </section>
 
@@ -120,7 +118,7 @@ export default function Home() {
 
         <div className="grid md:grid-cols-3 gap-10">
 
-          {featuredProjects.map((project) => (
+          {filteredProjects.map((project) => (
 
             <div
               key={project.title}
@@ -280,10 +278,6 @@ export default function Home() {
           </a>
 
         </div>
-
-        <p className="mt-10 text-gray-500 text-sm">
-          © 2026 CryptoDropScout. All rights reserved.
-        </p>
 
       </footer>
 
