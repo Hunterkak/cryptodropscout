@@ -9,6 +9,8 @@ import {
   collection,
   addDoc,
   onSnapshot,
+  deleteDoc,
+  doc,
 } from "firebase/firestore";
 
 export default function Home() {
@@ -59,6 +61,12 @@ export default function Home() {
     setLink("");
     setImage("");
     setTag("");
+  };
+
+  const deleteProject = async (id: string) => {
+
+    await deleteDoc(doc(db, "projects", id));
+
   };
 
   return (
@@ -210,12 +218,23 @@ export default function Home() {
 
                 </div>
 
-                <Link
-                  href={project.link}
-                  className={`inline-block mt-8 px-6 py-3 rounded-2xl bg-gradient-to-r ${project.color} font-semibold`}
-                >
-                  View Project
-                </Link>
+                <div className="flex gap-4 mt-8">
+
+                  <Link
+                    href={project.link}
+                    className={`px-6 py-3 rounded-2xl bg-gradient-to-r ${project.color} font-semibold`}
+                  >
+                    View Project
+                  </Link>
+
+                  <button
+                    onClick={() => deleteProject(project.id)}
+                    className="px-6 py-3 rounded-2xl bg-red-500 hover:bg-red-600 transition font-semibold"
+                  >
+                    Delete
+                  </button>
+
+                </div>
 
               </div>
 
