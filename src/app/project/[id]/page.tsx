@@ -10,7 +10,11 @@ import {
   getDoc,
 } from "firebase/firestore";
 
-export default function ProjectPage({ params }: any) {
+export default function ProjectPage({
+  params,
+}: {
+  params: { id: string };
+}) {
 
   const [project, setProject] = useState<any>(null);
 
@@ -18,16 +22,28 @@ export default function ProjectPage({ params }: any) {
 
     const fetchProject = async () => {
 
-      const docRef = doc(db, "projects", params.id);
+      try {
 
-      const docSnap = await getDoc(docRef);
+        const docRef = doc(
+          db,
+          "projects",
+          params.id
+        );
 
-      if (docSnap.exists()) {
+        const docSnap = await getDoc(docRef);
 
-        setProject({
-          id: docSnap.id,
-          ...docSnap.data(),
-        });
+        if (docSnap.exists()) {
+
+          setProject({
+            id: docSnap.id,
+            ...docSnap.data(),
+          });
+
+        }
+
+      } catch (error) {
+
+        console.log(error);
 
       }
 
@@ -113,59 +129,6 @@ export default function ProjectPage({ params }: any) {
                 alt={project.title}
                 className="w-full rounded-[32px] border border-white/10 shadow-2xl"
               />
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* Guide */}
-      <section className="max-w-5xl mx-auto px-6 md:px-16 py-20">
-
-        <div className="bg-white/5 border border-white/10 rounded-[32px] p-10">
-
-          <h2 className="text-4xl font-black mb-10">
-            Participation Guide
-          </h2>
-
-          <div className="space-y-8 text-gray-300 text-lg leading-relaxed">
-
-            <div className="flex gap-5">
-
-              <div className="w-12 h-12 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-300 font-bold">
-                1
-              </div>
-
-              <div>
-                Join the official platform and create your account.
-              </div>
-
-            </div>
-
-            <div className="flex gap-5">
-
-              <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-300 font-bold">
-                2
-              </div>
-
-              <div>
-                Complete social tasks, wallet connection & platform missions.
-              </div>
-
-            </div>
-
-            <div className="flex gap-5">
-
-              <div className="w-12 h-12 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-300 font-bold">
-                3
-              </div>
-
-              <div>
-                Stay active consistently to maximize airdrop eligibility.
-              </div>
 
             </div>
 
