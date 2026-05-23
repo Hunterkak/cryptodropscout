@@ -23,6 +23,7 @@ export default function Home() {
   const [link, setLink] = useState("");
   const [image, setImage] = useState("");
   const [tag, setTag] = useState("");
+  const [status, setStatus] = useState("Active");
 
   const [editingId, setEditingId] = useState("");
 
@@ -54,6 +55,7 @@ export default function Home() {
       description,
       badge: "New",
       tags: [tag || "Web3"],
+      status,
       link,
       image,
       color: "from-cyan-400 to-blue-500",
@@ -77,6 +79,7 @@ export default function Home() {
     setLink(project.link);
     setImage(project.image);
     setTag(project.tags?.[0] || "");
+    setStatus(project.status || "Active");
 
   };
 
@@ -89,6 +92,7 @@ export default function Home() {
       description,
       link,
       image,
+      status,
       tags: [tag || "Web3"],
     });
 
@@ -104,8 +108,17 @@ export default function Home() {
     setLink("");
     setImage("");
     setTag("");
+    setStatus("Active");
 
   };
+
+  const activeProjects = projects.filter(
+    (project) => project.status !== "Ended"
+  );
+
+  const endedProjects = projects.filter(
+    (project) => project.status === "Ended"
+  );
 
   return (
     <main className="min-h-screen bg-[#020817] text-white px-6 py-10">
@@ -116,14 +129,6 @@ export default function Home() {
         <h1 className="text-4xl font-extrabold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
           CryptoDropScout
         </h1>
-
-        <div className="flex gap-6 text-gray-300">
-
-          <a href="/">Home</a>
-          <a href="/blog">Blog</a>
-          <a href="/guides">Guides</a>
-
-        </div>
 
       </nav>
 
@@ -181,6 +186,19 @@ export default function Home() {
             className="px-5 py-4 rounded-2xl bg-black/20 border border-white/10"
           />
 
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="px-5 py-4 rounded-2xl bg-black/20 border border-white/10"
+          >
+            <option>Active</option>
+            <option>Upcoming</option>
+            <option>Hot</option>
+            <option>Confirmed</option>
+            <option>Potential</option>
+            <option>Ended</option>
+          </select>
+
         </div>
 
         <textarea
@@ -223,16 +241,16 @@ export default function Home() {
 
       </section>
 
-      {/* Projects */}
+      {/* Active Projects */}
       <section className="mt-24">
 
         <h2 className="text-5xl font-bold text-center mb-16">
-          Featured Projects
+          Active Projects
         </h2>
 
         <div className="grid md:grid-cols-3 gap-10">
 
-          {projects.map((project) => (
+          {activeProjects.map((project) => (
 
             <div
               key={project.id}
@@ -255,8 +273,8 @@ export default function Home() {
                     {project.title}
                   </h3>
 
-                  <span className="bg-white/10 px-4 py-2 rounded-full text-sm">
-                    {project.badge}
+                  <span className="bg-cyan-500/20 px-4 py-2 rounded-full text-sm">
+                    {project.status}
                   </span>
 
                 </div>
@@ -315,50 +333,55 @@ export default function Home() {
 
       </section>
 
-      {/* Footer */}
-      <footer className="mt-32 border-t border-white/10 py-16 text-center bg-white/5 backdrop-blur-xl rounded-t-3xl">
+      {/* Ended Projects */}
+      <section className="mt-32">
 
-        <h2 className="text-5xl font-extrabold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
-          CryptoDropScout
+        <h2 className="text-5xl font-bold text-center mb-16 text-red-400">
+          Ended Projects
         </h2>
 
-        <p className="text-gray-400 mt-5 text-lg">
-          Stay Informed • Stay Ahead • Stay Connected
-        </p>
+        <div className="grid md:grid-cols-3 gap-10">
 
-        <div className="flex justify-center gap-6 mt-10 flex-wrap">
+          {endedProjects.map((project) => (
 
-          <a
-            href="https://t.me/CryptoDropScoutt"
-            target="_blank"
-            className="px-6 py-3 rounded-2xl bg-cyan-500/10 hover:bg-cyan-500/20 transition border border-cyan-500/20"
-          >
-            Telegram
-          </a>
+            <div
+              key={project.id}
+              className="bg-red-500/5 border border-red-500/20 rounded-3xl overflow-hidden opacity-70"
+            >
 
-          <a
-            href="https://youtube.com/@cryptodrop_scout"
-            target="_blank"
-            className="px-6 py-3 rounded-2xl bg-red-500/10 hover:bg-red-500/20 transition border border-red-500/20"
-          >
-            YouTube
-          </a>
+              <img
+                src={project.image}
+                alt={project.title}
+                className="w-full h-56 object-cover grayscale"
+              />
 
-          <a
-            href="https://x.com/cryptodrpscout"
-            target="_blank"
-            className="px-6 py-3 rounded-2xl bg-white/10 hover:bg-white/20 transition border border-white/10"
-          >
-            Twitter / X
-          </a>
+              <div className="p-8">
+
+                <div className="flex justify-between items-center mb-6">
+
+                  <h3 className="text-4xl font-bold text-red-400">
+                    {project.title}
+                  </h3>
+
+                  <span className="bg-red-500/20 px-4 py-2 rounded-full text-sm">
+                    Ended
+                  </span>
+
+                </div>
+
+                <p className="text-gray-400 text-lg leading-relaxed">
+                  {project.description}
+                </p>
+
+              </div>
+
+            </div>
+
+          ))}
 
         </div>
 
-        <p className="mt-10 text-gray-500 text-sm">
-          © 2026 CryptoDropScout. All rights reserved.
-        </p>
-
-      </footer>
+      </section>
 
     </main>
   );
