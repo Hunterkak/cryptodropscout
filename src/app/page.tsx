@@ -27,6 +27,9 @@ export default function Home() {
   const [categoryFilter, setCategoryFilter] =
     useState("All");
 
+  const [language, setLanguage] =
+    useState("EN");
+
   useEffect(() => {
 
     const unsubscribe = onSnapshot(
@@ -64,9 +67,19 @@ export default function Home() {
     (project) => {
 
       const matchesSearch =
+
         project.title
           ?.toLowerCase()
-          .includes(search.toLowerCase());
+          ?.includes(search.toLowerCase()) ||
+
+        project.description
+          ?.toLowerCase()
+          ?.includes(search.toLowerCase()) ||
+
+        project.tags
+          ?.join(" ")
+          ?.toLowerCase()
+          ?.includes(search.toLowerCase());
 
       const matchesStatus =
         statusFilter === "All"
@@ -95,12 +108,12 @@ export default function Home() {
 
     <main className="min-h-screen bg-[#020817] text-white overflow-hidden">
 
-      {/* Glow */}
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-cyan-500/20 blur-[140px] rounded-full"></div>
 
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-500/20 blur-[140px] rounded-full"></div>
 
-      {/* Navbar */}
+      {/* NAVBAR */}
+
       <header className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 py-10 flex items-center justify-between">
 
         <h1 className="text-5xl font-black bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
@@ -108,6 +121,47 @@ export default function Home() {
         </h1>
 
         <div className="flex items-center gap-4">
+
+          <select
+            value={language}
+            onChange={(e) =>
+              setLanguage(e.target.value)
+            }
+            className="px-4 py-3 rounded-2xl bg-[#0f172a] border border-white/10 text-white"
+          >
+            <option value="EN">EN</option>
+            <option value="BN">বাংলা</option>
+            <option value="HI">हिन्दी</option>
+          </select>
+
+          <a
+            href="/"
+            className="hidden md:flex px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
+          >
+            Home
+          </a>
+
+          <a
+            href="#latest"
+            className="hidden md:flex px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
+          >
+            Latest Airdrops
+          </a>
+
+          <a
+            href="#featured"
+            className="hidden md:flex px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
+          >
+            Featured
+          </a>
+
+          <a
+            href="https://youtube.com/@cryptodrop_scout"
+            target="_blank"
+            className="hidden md:flex px-5 py-3 rounded-2xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition"
+          >
+            YouTube
+          </a>
 
           <a
             href="https://x.com/cryptodrpscout"
@@ -128,7 +182,8 @@ export default function Home() {
 
       </header>
 
-      {/* Hero */}
+      {/* HERO */}
+
       <section className="relative z-10 max-w-6xl mx-auto px-6 md:px-16 pt-14 pb-24 text-center">
 
         <div className="inline-flex px-6 py-3 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 mb-10">
@@ -137,10 +192,24 @@ export default function Home() {
 
         <h2 className="text-6xl md:text-8xl font-black leading-tight">
 
-          Discover Early
+          {
+            language === "EN"
+              ? "Discover Early"
+              : language === "BN"
+              ? "নতুন এয়ারড্রপ খুঁজুন"
+              : "नई एयरड्रॉप खोजें"
+          }
 
           <span className="block bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
-            Airdrop Opportunities
+
+            {
+              language === "EN"
+                ? "Airdrop Opportunities"
+                : language === "BN"
+                ? "এয়ারড্রপ সুযোগ"
+                : "एयरड्रॉप अवसर"
+            }
+
           </span>
 
         </h2>
@@ -149,9 +218,21 @@ export default function Home() {
           Find promising crypto testnets, nodes, AI projects and Web3 opportunities before everyone else.
         </p>
 
+        <div className="mt-10">
+
+          <a
+            href="#latest"
+            className="inline-flex px-8 py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-lg hover:scale-105 transition"
+          >
+            Explore Airdrops →
+          </a>
+
+        </div>
+
       </section>
 
-      {/* Search + Filters */}
+      {/* FILTERS */}
+
       <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 pb-16">
 
         <div className="grid lg:grid-cols-3 gap-6">
@@ -163,7 +244,7 @@ export default function Home() {
             onChange={(e) =>
               setSearch(e.target.value)
             }
-            className="px-6 py-5 rounded-2xl bg-white/5 border border-white/10 outline-none"
+            className="px-6 py-5 rounded-2xl bg-[#0f172a] border border-white/10 outline-none text-white"
           />
 
           <select
@@ -171,7 +252,7 @@ export default function Home() {
             onChange={(e) =>
               setStatusFilter(e.target.value)
             }
-            className="px-6 py-5 rounded-2xl bg-white/5 border border-white/10 outline-none"
+            className="px-6 py-5 rounded-2xl bg-[#0f172a] border border-white/10 outline-none text-white"
           >
             <option>All</option>
             <option>Active</option>
@@ -186,7 +267,7 @@ export default function Home() {
             onChange={(e) =>
               setCategoryFilter(e.target.value)
             }
-            className="px-6 py-5 rounded-2xl bg-white/5 border border-white/10 outline-none"
+            className="px-6 py-5 rounded-2xl bg-[#0f172a] border border-white/10 outline-none text-white"
           >
 
             {categories.map((category) => (
@@ -203,10 +284,14 @@ export default function Home() {
 
       </section>
 
-      {/* Featured */}
+      {/* FEATURED */}
+
       {featuredProjects.length > 0 && (
 
-        <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 pb-24">
+        <section
+          id="featured"
+          className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 pb-24"
+        >
 
           <div className="flex items-center gap-4 mb-12">
 
@@ -278,8 +363,12 @@ export default function Home() {
 
       )}
 
-      {/* Latest */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 pb-24">
+      {/* LATEST */}
+
+      <section
+        id="latest"
+        className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 pb-24"
+      >
 
         <div className="flex items-center gap-4 mb-12">
 
@@ -345,7 +434,8 @@ export default function Home() {
 
       </section>
 
-      {/* Footer */}
+      {/* FOOTER */}
+
       <footer className="relative z-10 border-t border-white/10">
 
         <div className="max-w-7xl mx-auto px-6 md:px-16 py-14 flex flex-col md:flex-row items-center justify-between gap-8">
