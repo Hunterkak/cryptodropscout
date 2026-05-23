@@ -2,124 +2,154 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { featuredProjects, airdrops } from "./data/projects";
+import { featuredProjects } from "./data/projects";
 
 export default function Home() {
 
   const [search, setSearch] = useState("");
-  const [activeFilter, setActiveFilter] = useState("All");
+  const [projects, setProjects] = useState(featuredProjects);
 
-  const filteredProjects = featuredProjects.filter((project) => {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [link, setLink] = useState("");
+  const [image, setImage] = useState("");
+  const [tag, setTag] = useState("");
 
-    const matchesSearch =
-      project.title.toLowerCase().includes(search.toLowerCase()) ||
-      project.tags.join(" ").toLowerCase().includes(search.toLowerCase());
+  const addProject = () => {
 
-    const matchesFilter =
-      activeFilter === "All" ||
-      project.tags.includes(activeFilter);
+    if (!title || !description) return;
 
-    return matchesSearch && matchesFilter;
-  });
+    const newProject = {
+      title,
+      description,
+      badge: "New",
+      tags: [tag || "Web3"],
+      link,
+      image,
+      color: "from-cyan-400 to-blue-500",
+    };
 
-  const filters = [
-    "All",
-    "Node",
-    "Testnet",
-    "AI",
-    "Rewards",
-    "Web3",
-  ];
+    setProjects([newProject, ...projects]);
+
+    setTitle("");
+    setDescription("");
+    setLink("");
+    setImage("");
+    setTag("");
+  };
+
+  const filteredProjects = projects.filter((project) =>
+    project.title.toLowerCase().includes(search.toLowerCase()) ||
+    project.tags.join(" ").toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <main className="min-h-screen bg-[#020817] text-white overflow-hidden">
+    <main className="min-h-screen bg-[#020817] text-white px-6 py-10">
 
       {/* Navbar */}
-      <nav className="flex items-center justify-between px-6 md:px-8 py-6 border-b border-white/10 backdrop-blur-xl sticky top-0 z-50 bg-[#020817]/80">
+      <nav className="flex items-center justify-between mb-20">
 
-        <h1 className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-extrabold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
           CryptoDropScout
         </h1>
 
-        <div className="hidden md:flex gap-8 text-gray-300 font-medium">
+        <div className="flex gap-6 text-gray-300">
 
-          <a href="/" className="hover:text-cyan-400 transition">
-            Home
-          </a>
-
-          <a href="/airdrops" className="hover:text-cyan-400 transition">
-            Airdrops
-          </a>
-
-          <a href="/guides" className="hover:text-cyan-400 transition">
-            Guides
-          </a>
-
-          <a href="/blog" className="hover:text-cyan-400 transition">
-            Blog
-          </a>
+          <a href="/">Home</a>
+          <a href="/blog">Blog</a>
+          <a href="/guides">Guides</a>
 
         </div>
 
       </nav>
 
       {/* Hero */}
-      <section className="relative text-center py-28 px-6">
+      <section className="text-center">
 
-        <h1 className="text-6xl md:text-8xl font-extrabold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
+        <h1 className="text-7xl font-extrabold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
           CryptoDropScout
         </h1>
 
-        <p className="mt-8 text-xl text-gray-300 max-w-3xl mx-auto">
+        <p className="mt-6 text-xl text-gray-300 max-w-3xl mx-auto">
           Discover Early Web3 Opportunities, Nodes, Testnets & Airdrops Before Everyone Else.
         </p>
 
       </section>
 
       {/* Search */}
-      <section className="px-8 pb-10">
+      <section className="max-w-2xl mx-auto mt-20">
 
-        <div className="max-w-2xl mx-auto">
+        <input
+          type="text"
+          placeholder="Search projects..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full px-6 py-5 rounded-2xl bg-white/5 border border-white/10 outline-none"
+        />
+
+      </section>
+
+      {/* Admin Form */}
+      <section className="max-w-4xl mx-auto mt-20 bg-white/5 border border-white/10 rounded-3xl p-10">
+
+        <h2 className="text-4xl font-bold mb-10">
+          Add New Project
+        </h2>
+
+        <div className="grid md:grid-cols-2 gap-6">
 
           <input
             type="text"
-            placeholder="Search projects, nodes, testnets..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-6 py-5 rounded-2xl bg-white/5 border border-white/10 outline-none text-white placeholder:text-gray-500 focus:border-cyan-400 transition"
+            placeholder="Project Name"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="px-5 py-4 rounded-2xl bg-black/20 border border-white/10"
+          />
+
+          <input
+            type="text"
+            placeholder="Tag"
+            value={tag}
+            onChange={(e) => setTag(e.target.value)}
+            className="px-5 py-4 rounded-2xl bg-black/20 border border-white/10"
+          />
+
+          <input
+            type="text"
+            placeholder="Referral Link"
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+            className="px-5 py-4 rounded-2xl bg-black/20 border border-white/10"
+          />
+
+          <input
+            type="text"
+            placeholder="Image URL"
+            value={image}
+            onChange={(e) => setImage(e.target.value)}
+            className="px-5 py-4 rounded-2xl bg-black/20 border border-white/10"
           />
 
         </div>
 
-      </section>
+        <textarea
+          placeholder="Project Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="w-full mt-6 px-5 py-4 rounded-2xl bg-black/20 border border-white/10 min-h-[140px]"
+        />
 
-      {/* Filters */}
-      <section className="px-8 pb-20">
-
-        <div className="flex justify-center flex-wrap gap-4">
-
-          {filters.map((filter) => (
-
-            <button
-              key={filter}
-              onClick={() => setActiveFilter(filter)}
-              className={`px-5 py-3 rounded-2xl transition font-medium ${
-                activeFilter === filter
-                  ? "bg-cyan-500 text-white"
-                  : "bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10"
-              }`}
-            >
-              {filter}
-            </button>
-
-          ))}
-
-        </div>
+        <button
+          onClick={addProject}
+          className="mt-8 px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold"
+        >
+          Publish Project
+        </button>
 
       </section>
 
-      {/* Featured Projects */}
-      <section className="px-8 pb-28">
+      {/* Projects */}
+      <section className="mt-24">
 
         <h2 className="text-5xl font-bold text-center mb-16">
           Featured Projects
@@ -131,7 +161,7 @@ export default function Home() {
 
             <div
               key={project.title}
-              className="bg-white/5 border border-purple-500/20 rounded-3xl overflow-hidden backdrop-blur-xl hover:scale-[1.02] transition"
+              className="bg-white/5 border border-purple-500/20 rounded-3xl overflow-hidden"
             >
 
               <img
@@ -150,7 +180,7 @@ export default function Home() {
                     {project.title}
                   </h3>
 
-                  <span className="bg-white/10 px-4 py-2 rounded-full text-sm text-gray-300">
+                  <span className="bg-white/10 px-4 py-2 rounded-full text-sm">
                     {project.badge}
                   </span>
 
@@ -177,7 +207,7 @@ export default function Home() {
 
                 <Link
                   href={project.link}
-                  className={`inline-block mt-8 px-6 py-3 rounded-2xl bg-gradient-to-r ${project.color} font-semibold hover:opacity-90 transition`}
+                  className={`inline-block mt-8 px-6 py-3 rounded-2xl bg-gradient-to-r ${project.color} font-semibold`}
                 >
                   View Project
                 </Link>
