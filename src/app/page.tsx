@@ -15,11 +15,11 @@ export default function Home() {
             Home
           </a>
 
-          <a href="#projects" className="hover:text-cyan-400 transition">
+          <a href="/airdrops" className="hover:text-cyan-400 transition">
             Projects
           </a>
 
-          <a href="#socials" className="hover:text-cyan-400 transition">
+          <a href="/guides" className="hover:text-cyan-400 transition">
             Socials
           </a>
 
@@ -127,9 +127,12 @@ export default function Home() {
               </span>
             </div>
 
-            <button className="mt-8 px-6 py-3 rounded-xl bg-cyan-500 font-semibold">
+            <a
+              href="/guides"
+              className="inline-block mt-8 px-6 py-3 rounded-xl bg-cyan-500 font-semibold"
+            >
               View Guide
-            </button>
+            </a>
 
           </div>
 
@@ -163,9 +166,12 @@ export default function Home() {
               </span>
             </div>
 
-            <button className="mt-8 px-6 py-3 rounded-xl bg-blue-500 font-semibold">
+            <a
+              href="/guides"
+              className="inline-block mt-8 px-6 py-3 rounded-xl bg-blue-500 font-semibold"
+            >
               View Guide
-            </button>
+            </a>
 
           </div>
 
@@ -199,9 +205,12 @@ export default function Home() {
               </span>
             </div>
 
-            <button className="mt-8 px-6 py-3 rounded-xl bg-purple-500 font-semibold">
+            <a
+              href="/guides"
+              className="inline-block mt-8 px-6 py-3 rounded-xl bg-purple-500 font-semibold"
+            >
               View Guide
-            </button>
+            </a>
 
           </div>
 
