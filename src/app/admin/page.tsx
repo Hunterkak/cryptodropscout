@@ -22,6 +22,9 @@ export default function AdminPage() {
   const [image, setImage] = useState("");
   const [link, setLink] = useState("");
   const [status, setStatus] = useState("Active");
+  const [difficulty, setDifficulty] = useState("Easy");
+  const [reward, setReward] = useState("Potential");
+  const [featured, setFeatured] = useState(false);
   const [tags, setTags] = useState("");
   const [guide, setGuide] = useState("");
 
@@ -54,6 +57,9 @@ export default function AdminPage() {
     setImage("");
     setLink("");
     setStatus("Active");
+    setDifficulty("Easy");
+    setReward("Potential");
+    setFeatured(false);
     setTags("");
     setGuide("");
     setEditingId("");
@@ -69,8 +75,16 @@ export default function AdminPage() {
       image,
       link,
       status,
+      difficulty,
+      reward,
+      featured,
       guide,
-      tags: tags.split(",").map((tag) => tag.trim()),
+
+      tags: tags
+        .split(",")
+        .map((tag) => tag.trim()),
+
+      createdAt: Date.now(),
 
     };
 
@@ -109,8 +123,14 @@ export default function AdminPage() {
     setImage(project.image || "");
     setLink(project.link || "");
     setStatus(project.status || "Active");
+    setDifficulty(project.difficulty || "Easy");
+    setReward(project.reward || "Potential");
+    setFeatured(project.featured || false);
     setGuide(project.guide || "");
-    setTags(project.tags?.join(", ") || "");
+
+    setTags(
+      project.tags?.join(", ") || ""
+    );
 
   };
 
@@ -120,12 +140,12 @@ export default function AdminPage() {
 
       <div className="max-w-7xl mx-auto">
 
-        <h1 className="text-5xl font-black mb-14">
-          Admin Dashboard
+        <h1 className="text-6xl font-black mb-14">
+          Ultimate Admin Panel
         </h1>
 
         {/* Form */}
-        <div className="bg-white/5 border border-white/10 rounded-[32px] p-10 mb-16">
+        <div className="bg-white/5 border border-white/10 rounded-[36px] p-10 mb-16">
 
           <div className="grid md:grid-cols-2 gap-6">
 
@@ -171,83 +191,72 @@ export default function AdminPage() {
           />
 
           <textarea
-            placeholder="Full Guide / Steps"
+            placeholder="Full Guide / X Thread Style"
             value={guide}
             onChange={(e) => setGuide(e.target.value)}
             className="w-full mt-6 px-6 py-5 rounded-2xl bg-[#0f172a] border border-white/10 outline-none min-h-[220px]"
           />
 
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="mt-6 px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
-          >
-            <option>Active</option>
-            <option>Upcoming</option>
-            <option>Hot</option>
-            <option>Confirmed</option>
-            <option>Potential</option>
-            <option>Ended</option>
-          </select>
+          <div className="grid md:grid-cols-3 gap-6 mt-6">
+
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
+            >
+              <option>Active</option>
+              <option>Upcoming</option>
+              <option>Hot</option>
+              <option>Confirmed</option>
+              <option>Potential</option>
+              <option>Ended</option>
+            </select>
+
+            <select
+              value={difficulty}
+              onChange={(e) => setDifficulty(e.target.value)}
+              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
+            >
+              <option>Easy</option>
+              <option>Medium</option>
+              <option>Hard</option>
+            </select>
+
+            <select
+              value={reward}
+              onChange={(e) => setReward(e.target.value)}
+              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
+            >
+              <option>Potential</option>
+              <option>High Potential</option>
+              <option>Confirmed Reward</option>
+            </select>
+
+          </div>
+
+          <div className="flex items-center gap-4 mt-8">
+
+            <input
+              type="checkbox"
+              checked={featured}
+              onChange={(e) => setFeatured(e.target.checked)}
+              className="w-6 h-6"
+            />
+
+            <span className="text-lg">
+              Featured Project
+            </span>
+
+          </div>
 
           <button
             onClick={handleSubmit}
-            className="block mt-8 px-8 py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-lg"
+            className="block mt-10 px-8 py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-lg hover:scale-105 transition"
           >
-            {editingId ? "Update Project" : "Add Project"}
+            {editingId
+              ? "Update Project"
+              : "Add Project"}
           </button>
-
-        </div>
-
-        {/* Project List */}
-        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
-
-          {projects.map((project) => (
-
-            <div
-              key={project.id}
-              className="bg-white/5 border border-white/10 rounded-[28px] overflow-hidden"
-            >
-
-              <img
-                src={project.image}
-                alt={project.title}
-                className="w-full h-56 object-cover"
-              />
-
-              <div className="p-6">
-
-                <h2 className="text-3xl font-black">
-                  {project.title}
-                </h2>
-
-                <p className="text-gray-400 mt-4">
-                  {project.description}
-                </p>
-
-                <div className="flex gap-4 mt-8">
-
-                  <button
-                    onClick={() => handleEdit(project)}
-                    className="px-5 py-3 rounded-2xl bg-cyan-500/20 border border-cyan-500/20"
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(project.id)}
-                    className="px-5 py-3 rounded-2xl bg-red-500/20 border border-red-500/20"
-                  >
-                    Delete
-                  </button>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          ))}
 
         </div>
 
