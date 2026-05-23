@@ -20,15 +20,31 @@ export default function AdminPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState("");
-  const [link, setLink] = useState("");
-  const [status, setStatus] = useState("Active");
-  const [difficulty, setDifficulty] = useState("Easy");
-  const [reward, setReward] = useState("Potential");
-  const [featured, setFeatured] = useState(false);
-  const [tags, setTags] = useState("");
-  const [guide, setGuide] = useState("");
 
-  const [editingId, setEditingId] = useState("");
+  const [link, setLink] = useState("");
+  const [airdrop, setAirdrop] = useState("");
+  const [twitter, setTwitter] = useState("");
+  const [youtube, setYoutube] = useState("");
+
+  const [status, setStatus] =
+    useState("Active");
+
+  const [difficulty, setDifficulty] =
+    useState("Easy");
+
+  const [reward, setReward] =
+    useState("Potential");
+
+  const [featured, setFeatured] =
+    useState(false);
+
+  const [tags, setTags] = useState("");
+
+  const [guide, setGuide] =
+    useState("");
+
+  const [editingId, setEditingId] =
+    useState("");
 
   useEffect(() => {
 
@@ -36,10 +52,12 @@ export default function AdminPage() {
       collection(db, "projects"),
       (snapshot) => {
 
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        const data = snapshot.docs.map(
+          (doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          })
+        );
 
         setProjects(data);
 
@@ -55,13 +73,21 @@ export default function AdminPage() {
     setTitle("");
     setDescription("");
     setImage("");
+
     setLink("");
+    setAirdrop("");
+    setTwitter("");
+    setYoutube("");
+
     setStatus("Active");
     setDifficulty("Easy");
     setReward("Potential");
+
     setFeatured(false);
+
     setTags("");
     setGuide("");
+
     setEditingId("");
 
   };
@@ -73,16 +99,25 @@ export default function AdminPage() {
       title,
       description,
       image,
+
       link,
+      airdrop,
+      twitter,
+      youtube,
+
       status,
       difficulty,
       reward,
+
       featured,
-      guide,
 
       tags: tags
         .split(",")
         .map((tag) => tag.trim()),
+
+      guide: guide
+        .split("\n")
+        .filter((line) => line.trim() !== ""),
 
       createdAt: Date.now(),
 
@@ -108,9 +143,13 @@ export default function AdminPage() {
 
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (
+    id: string
+  ) => {
 
-    await deleteDoc(doc(db, "projects", id));
+    await deleteDoc(
+      doc(db, "projects", id)
+    );
 
   };
 
@@ -119,17 +158,45 @@ export default function AdminPage() {
     setEditingId(project.id);
 
     setTitle(project.title || "");
-    setDescription(project.description || "");
+    setDescription(
+      project.description || ""
+    );
+
     setImage(project.image || "");
+
     setLink(project.link || "");
+    setAirdrop(
+      project.airdrop || ""
+    );
+
+    setTwitter(
+      project.twitter || ""
+    );
+
+    setYoutube(
+      project.youtube || ""
+    );
+
     setStatus(project.status || "Active");
-    setDifficulty(project.difficulty || "Easy");
-    setReward(project.reward || "Potential");
-    setFeatured(project.featured || false);
-    setGuide(project.guide || "");
+
+    setDifficulty(
+      project.difficulty || "Easy"
+    );
+
+    setReward(
+      project.reward || "Potential"
+    );
+
+    setFeatured(
+      project.featured || false
+    );
 
     setTags(
       project.tags?.join(", ") || ""
+    );
+
+    setGuide(
+      project.guide?.join("\n") || ""
     );
 
   };
@@ -144,7 +211,8 @@ export default function AdminPage() {
           Ultimate Admin Panel
         </h1>
 
-        {/* Form */}
+        {/* FORM */}
+
         <div className="bg-white/5 border border-white/10 rounded-[36px] p-10 mb-16">
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -153,7 +221,9 @@ export default function AdminPage() {
               type="text"
               placeholder="Project Title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) =>
+                setTitle(e.target.value)
+              }
               className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
             />
 
@@ -161,23 +231,49 @@ export default function AdminPage() {
               type="text"
               placeholder="Image URL"
               value={image}
-              onChange={(e) => setImage(e.target.value)}
+              onChange={(e) =>
+                setImage(e.target.value)
+              }
               className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
             />
 
             <input
               type="text"
-              placeholder="Referral Link"
+              placeholder="Website Link"
               value={link}
-              onChange={(e) => setLink(e.target.value)}
+              onChange={(e) =>
+                setLink(e.target.value)
+              }
               className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
             />
 
             <input
               type="text"
-              placeholder="Tags (comma separated)"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
+              placeholder="Airdrop Link"
+              value={airdrop}
+              onChange={(e) =>
+                setAirdrop(e.target.value)
+              }
+              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
+            />
+
+            <input
+              type="text"
+              placeholder="Twitter/X Link"
+              value={twitter}
+              onChange={(e) =>
+                setTwitter(e.target.value)
+              }
+              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
+            />
+
+            <input
+              type="text"
+              placeholder="YouTube Guide Link"
+              value={youtube}
+              onChange={(e) =>
+                setYoutube(e.target.value)
+              }
               className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
             />
 
@@ -186,14 +282,18 @@ export default function AdminPage() {
           <textarea
             placeholder="Short Description"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) =>
+              setDescription(e.target.value)
+            }
             className="w-full mt-6 px-6 py-5 rounded-2xl bg-[#0f172a] border border-white/10 outline-none min-h-[120px]"
           />
 
           <textarea
-            placeholder="Full Guide / X Thread Style"
+            placeholder="Guide Steps (one line = one step)"
             value={guide}
-            onChange={(e) => setGuide(e.target.value)}
+            onChange={(e) =>
+              setGuide(e.target.value)
+            }
             className="w-full mt-6 px-6 py-5 rounded-2xl bg-[#0f172a] border border-white/10 outline-none min-h-[220px]"
           />
 
@@ -201,21 +301,24 @@ export default function AdminPage() {
 
             <select
               value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
+              onChange={(e) =>
+                setStatus(e.target.value)
+              }
+              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none text-white"
             >
               <option>Active</option>
-              <option>Upcoming</option>
               <option>Hot</option>
-              <option>Confirmed</option>
               <option>Potential</option>
+              <option>Confirmed</option>
               <option>Ended</option>
             </select>
 
             <select
               value={difficulty}
-              onChange={(e) => setDifficulty(e.target.value)}
-              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
+              onChange={(e) =>
+                setDifficulty(e.target.value)
+              }
+              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none text-white"
             >
               <option>Easy</option>
               <option>Medium</option>
@@ -224,8 +327,10 @@ export default function AdminPage() {
 
             <select
               value={reward}
-              onChange={(e) => setReward(e.target.value)}
-              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
+              onChange={(e) =>
+                setReward(e.target.value)
+              }
+              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none text-white"
             >
               <option>Potential</option>
               <option>High Potential</option>
@@ -234,12 +339,26 @@ export default function AdminPage() {
 
           </div>
 
+          <input
+            type="text"
+            placeholder="Tags (comma separated)"
+            value={tags}
+            onChange={(e) =>
+              setTags(e.target.value)
+            }
+            className="w-full mt-6 px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
+          />
+
           <div className="flex items-center gap-4 mt-8">
 
             <input
               type="checkbox"
               checked={featured}
-              onChange={(e) => setFeatured(e.target.checked)}
+              onChange={(e) =>
+                setFeatured(
+                  e.target.checked
+                )
+              }
               className="w-6 h-6"
             />
 
@@ -251,7 +370,7 @@ export default function AdminPage() {
 
           <button
             onClick={handleSubmit}
-            className="block mt-10 px-8 py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-lg hover:scale-105 transition"
+            className="mt-10 px-8 py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-lg hover:scale-105 transition"
           >
             {editingId
               ? "Update Project"
