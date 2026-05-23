@@ -227,6 +227,51 @@ export default function Home() {
 
       </section>
 
+      {/* Footer */}
+      <footer className="mt-32 border-t border-white/10 py-16 text-center bg-white/5 backdrop-blur-xl rounded-t-3xl">
+
+        <h2 className="text-5xl font-extrabold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
+          CryptoDropScout
+        </h2>
+
+        <p className="text-gray-400 mt-5 text-lg">
+          Stay Informed • Stay Ahead • Stay Connected
+        </p>
+
+        <div className="flex justify-center gap-6 mt-10 flex-wrap">
+
+          <a
+            href="https://t.me/CryptoDropScoutt"
+            target="_blank"
+            className="px-6 py-3 rounded-2xl bg-cyan-500/10 hover:bg-cyan-500/20 transition border border-cyan-500/20"
+          >
+            Telegram
+          </a>
+
+          <a
+            href="https://youtube.com/@cryptodrop_scout"
+            target="_blank"
+            className="px-6 py-3 rounded-2xl bg-red-500/10 hover:bg-red-500/20 transition border border-red-500/20"
+          >
+            YouTube
+          </a>
+
+          <a
+            href="https://x.com/cryptodrpscout"
+            target="_blank"
+            className="px-6 py-3 rounded-2xl bg-white/10 hover:bg-white/20 transition border border-white/10"
+          >
+            Twitter / X
+          </a>
+
+        </div>
+
+        <p className="mt-10 text-gray-500 text-sm">
+          © 2026 CryptoDropScout. All rights reserved.
+        </p>
+
+      </footer>
+
     </main>
   );
 }
