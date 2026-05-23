@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import {
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -17,6 +18,14 @@ import { db } from "../lib/firebase";
 export default function Home() {
 
   const [projects, setProjects] = useState<any[]>([]);
+
+  const [search, setSearch] = useState("");
+
+  const [statusFilter, setStatusFilter] =
+    useState("All");
+
+  const [categoryFilter, setCategoryFilter] =
+    useState("All");
 
   useEffect(() => {
 
@@ -38,7 +47,47 @@ export default function Home() {
 
   }, []);
 
-  const featuredProjects = projects.filter(
+  const categories = useMemo(() => {
+
+    const allTags = projects.flatMap(
+      (project) => project.tags || []
+    );
+
+    return [
+      "All",
+      ...Array.from(new Set(allTags)),
+    ];
+
+  }, [projects]);
+
+  const filteredProjects = projects.filter(
+    (project) => {
+
+      const matchesSearch =
+        project.title
+          ?.toLowerCase()
+          .includes(search.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "All"
+          ? true
+          : project.status === statusFilter;
+
+      const matchesCategory =
+        categoryFilter === "All"
+          ? true
+          : project.tags?.includes(categoryFilter);
+
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesCategory
+      );
+
+    }
+  );
+
+  const featuredProjects = filteredProjects.filter(
     (project) => project.featured
   );
 
@@ -58,32 +107,99 @@ export default function Home() {
           CryptoDropScout
         </h1>
 
-        <Link
-          href="/admin"
-          className="px-6 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
-        >
-          Admin
-        </Link>
+        <div className="flex items-center gap-4">
+
+          <a
+            href="https://x.com/cryptodrpscout"
+            target="_blank"
+            className="hidden md:flex px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
+          >
+            X / Twitter
+          </a>
+
+          <Link
+            href="/admin"
+            className="px-5 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold"
+          >
+            Admin
+          </Link>
+
+        </div>
 
       </header>
 
       {/* Hero */}
-      <section className="relative z-10 max-w-6xl mx-auto px-6 md:px-16 pt-16 pb-24 text-center">
+      <section className="relative z-10 max-w-6xl mx-auto px-6 md:px-16 pt-14 pb-24 text-center">
 
         <div className="inline-flex px-6 py-3 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 mb-10">
-          Web3 • Nodes • Testnets • Airdrops
+          Latest Web3 Alpha 🚀
         </div>
 
         <h2 className="text-6xl md:text-8xl font-black leading-tight">
+
           Discover Early
+
           <span className="block bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
-            Crypto Opportunities
+            Airdrop Opportunities
           </span>
+
         </h2>
 
         <p className="mt-10 text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto">
-          Find promising airdrops, testnets and Web3 opportunities before everyone else.
+          Find promising crypto testnets, nodes, AI projects and Web3 opportunities before everyone else.
         </p>
+
+      </section>
+
+      {/* Search + Filters */}
+      <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 pb-16">
+
+        <div className="grid lg:grid-cols-3 gap-6">
+
+          <input
+            type="text"
+            placeholder="Search projects..."
+            value={search}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
+            className="px-6 py-5 rounded-2xl bg-white/5 border border-white/10 outline-none"
+          />
+
+          <select
+            value={statusFilter}
+            onChange={(e) =>
+              setStatusFilter(e.target.value)
+            }
+            className="px-6 py-5 rounded-2xl bg-white/5 border border-white/10 outline-none"
+          >
+            <option>All</option>
+            <option>Active</option>
+            <option>Hot</option>
+            <option>Potential</option>
+            <option>Confirmed</option>
+            <option>Ended</option>
+          </select>
+
+          <select
+            value={categoryFilter}
+            onChange={(e) =>
+              setCategoryFilter(e.target.value)
+            }
+            className="px-6 py-5 rounded-2xl bg-white/5 border border-white/10 outline-none"
+          >
+
+            {categories.map((category) => (
+
+              <option key={category}>
+                {category}
+              </option>
+
+            ))}
+
+          </select>
+
+        </div>
 
       </section>
 
@@ -99,7 +215,7 @@ export default function Home() {
             </div>
 
             <h2 className="text-5xl font-black">
-              Featured Projects
+              Featured Airdrops
             </h2>
 
           </div>
@@ -147,7 +263,7 @@ export default function Home() {
                   </p>
 
                   <div className="mt-8 inline-flex items-center gap-3 text-cyan-300 font-bold text-lg">
-                    View Guide →
+                    View Full Guide →
                   </div>
 
                 </div>
@@ -162,7 +278,7 @@ export default function Home() {
 
       )}
 
-      {/* All Projects */}
+      {/* Latest */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 pb-24">
 
         <div className="flex items-center gap-4 mb-12">
@@ -172,14 +288,14 @@ export default function Home() {
           </div>
 
           <h2 className="text-5xl font-black">
-            All Projects
+            Latest Airdrops
           </h2>
 
         </div>
 
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
 
-          {projects.map((project) => (
+          {filteredProjects.map((project) => (
 
             <Link
               href={`/project/${project.id}`}
