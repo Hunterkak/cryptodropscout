@@ -1,16 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { db } from "../../lib/firebase";
 
 import {
-  collection,
   addDoc,
-  onSnapshot,
+  collection,
   deleteDoc,
   doc,
+  onSnapshot,
   updateDoc,
 } from "firebase/firestore";
 
@@ -20,10 +19,11 @@ export default function AdminPage() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [link, setLink] = useState("");
   const [image, setImage] = useState("");
-  const [tag, setTag] = useState("");
+  const [link, setLink] = useState("");
   const [status, setStatus] = useState("Active");
+  const [tags, setTags] = useState("");
+  const [guide, setGuide] = useState("");
 
   const [editingId, setEditingId] = useState("");
 
@@ -39,6 +39,7 @@ export default function AdminPage() {
         }));
 
         setProjects(data);
+
       }
     );
 
@@ -46,123 +47,94 @@ export default function AdminPage() {
 
   }, []);
 
-  const addProject = async () => {
+  const resetForm = () => {
 
-    if (!title || !description) return;
+    setTitle("");
+    setDescription("");
+    setImage("");
+    setLink("");
+    setStatus("Active");
+    setTags("");
+    setGuide("");
+    setEditingId("");
 
-    await addDoc(collection(db, "projects"), {
-      title,
-      description,
-      badge: "New",
-      tags: [tag || "Web3"],
-      status,
-      link,
-      image,
-      color: "from-cyan-400 to-blue-500",
-    });
-
-    resetForm();
   };
 
-  const deleteProject = async (id: string) => {
+  const handleSubmit = async () => {
+
+    const projectData = {
+
+      title,
+      description,
+      image,
+      link,
+      status,
+      guide,
+      tags: tags.split(",").map((tag) => tag.trim()),
+
+    };
+
+    if (editingId) {
+
+      await updateDoc(
+        doc(db, "projects", editingId),
+        projectData
+      );
+
+    } else {
+
+      await addDoc(
+        collection(db, "projects"),
+        projectData
+      );
+
+    }
+
+    resetForm();
+
+  };
+
+  const handleDelete = async (id: string) => {
 
     await deleteDoc(doc(db, "projects", id));
 
   };
 
-  const editProject = (project: any) => {
+  const handleEdit = (project: any) => {
 
     setEditingId(project.id);
 
-    setTitle(project.title);
-    setDescription(project.description);
-    setLink(project.link);
-    setImage(project.image);
-    setTag(project.tags?.[0] || "");
+    setTitle(project.title || "");
+    setDescription(project.description || "");
+    setImage(project.image || "");
+    setLink(project.link || "");
     setStatus(project.status || "Active");
-
-  };
-
-  const updateProject = async () => {
-
-    if (!editingId) return;
-
-    await updateDoc(doc(db, "projects", editingId), {
-      title,
-      description,
-      link,
-      image,
-      status,
-      tags: [tag || "Web3"],
-    });
-
-    resetForm();
-  };
-
-  const resetForm = () => {
-
-    setEditingId("");
-
-    setTitle("");
-    setDescription("");
-    setLink("");
-    setImage("");
-    setTag("");
-    setStatus("Active");
+    setGuide(project.guide || "");
+    setTags(project.tags?.join(", ") || "");
 
   };
 
   return (
-    <main className="min-h-screen bg-[#020817] text-white px-6 py-10">
 
-      <div className="max-w-6xl mx-auto">
+    <main className="min-h-screen bg-[#020817] text-white px-6 py-20">
 
-        <div className="flex justify-between items-center mb-16">
+      <div className="max-w-7xl mx-auto">
 
-          <h1 className="text-5xl font-extrabold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
-            Admin Dashboard
-          </h1>
-
-          <Link
-            href="/"
-            className="px-6 py-3 rounded-2xl bg-white/10 hover:bg-white/20 transition"
-          >
-            Back To Website
-          </Link>
-
-        </div>
+        <h1 className="text-5xl font-black mb-14">
+          Admin Dashboard
+        </h1>
 
         {/* Form */}
-        <section className="bg-white/5 border border-white/10 rounded-3xl p-10">
-
-          <h2 className="text-4xl font-bold mb-10">
-            {editingId ? "Edit Project" : "Add Project"}
-          </h2>
+        <div className="bg-white/5 border border-white/10 rounded-[32px] p-10 mb-16">
 
           <div className="grid md:grid-cols-2 gap-6">
 
             <input
               type="text"
-              placeholder="Project Name"
+              placeholder="Project Title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="px-5 py-4 rounded-2xl bg-black/20 border border-white/10"
-            />
-
-            <input
-              type="text"
-              placeholder="Tag"
-              value={tag}
-              onChange={(e) => setTag(e.target.value)}
-              className="px-5 py-4 rounded-2xl bg-black/20 border border-white/10"
-            />
-
-            <input
-              type="text"
-              placeholder="Referral Link"
-              value={link}
-              onChange={(e) => setLink(e.target.value)}
-              className="px-5 py-4 rounded-2xl bg-black/20 border border-white/10"
+              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
             />
 
             <input
@@ -170,134 +142,119 @@ export default function AdminPage() {
               placeholder="Image URL"
               value={image}
               onChange={(e) => setImage(e.target.value)}
-              className="px-5 py-4 rounded-2xl bg-black/20 border border-white/10"
+              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
             />
 
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="px-5 py-4 rounded-2xl bg-black/20 border border-white/10"
-            >
-              <option>Active</option>
-              <option>Upcoming</option>
-              <option>Hot</option>
-              <option>Confirmed</option>
-              <option>Potential</option>
-              <option>Ended</option>
-            </select>
+            <input
+              type="text"
+              placeholder="Referral Link"
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
+            />
+
+            <input
+              type="text"
+              placeholder="Tags (comma separated)"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
+            />
 
           </div>
 
           <textarea
-            placeholder="Project Description"
+            placeholder="Short Description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full mt-6 px-5 py-4 rounded-2xl bg-black/20 border border-white/10 min-h-[140px]"
+            className="w-full mt-6 px-6 py-5 rounded-2xl bg-[#0f172a] border border-white/10 outline-none min-h-[120px]"
           />
 
-          <div className="flex gap-4 mt-8 flex-wrap">
+          <textarea
+            placeholder="Full Guide / Steps"
+            value={guide}
+            onChange={(e) => setGuide(e.target.value)}
+            className="w-full mt-6 px-6 py-5 rounded-2xl bg-[#0f172a] border border-white/10 outline-none min-h-[220px]"
+          />
 
-            {editingId ? (
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="mt-6 px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
+          >
+            <option>Active</option>
+            <option>Upcoming</option>
+            <option>Hot</option>
+            <option>Confirmed</option>
+            <option>Potential</option>
+            <option>Ended</option>
+          </select>
 
-              <button
-                onClick={updateProject}
-                className="px-8 py-4 rounded-2xl bg-yellow-500 hover:bg-yellow-600 transition font-semibold"
-              >
-                Update Project
-              </button>
+          <button
+            onClick={handleSubmit}
+            className="block mt-8 px-8 py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-lg"
+          >
+            {editingId ? "Update Project" : "Add Project"}
+          </button>
 
-            ) : (
+        </div>
 
-              <button
-                onClick={addProject}
-                className="px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold"
-              >
-                Publish Project
-              </button>
+        {/* Project List */}
+        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
 
-            )}
+          {projects.map((project) => (
 
-            <button
-              onClick={resetForm}
-              className="px-8 py-4 rounded-2xl bg-gray-700 hover:bg-gray-800 transition font-semibold"
+            <div
+              key={project.id}
+              className="bg-white/5 border border-white/10 rounded-[28px] overflow-hidden"
             >
-              Reset
-            </button>
 
-          </div>
+              <img
+                src={project.image}
+                alt={project.title}
+                className="w-full h-56 object-cover"
+              />
 
-        </section>
+              <div className="p-6">
 
-        {/* Manage Projects */}
-        <section className="mt-24">
+                <h2 className="text-3xl font-black">
+                  {project.title}
+                </h2>
 
-          <h2 className="text-4xl font-bold mb-12">
-            Manage Projects
-          </h2>
+                <p className="text-gray-400 mt-4">
+                  {project.description}
+                </p>
 
-          <div className="grid md:grid-cols-3 gap-10">
+                <div className="flex gap-4 mt-8">
 
-            {projects.map((project) => (
+                  <button
+                    onClick={() => handleEdit(project)}
+                    className="px-5 py-3 rounded-2xl bg-cyan-500/20 border border-cyan-500/20"
+                  >
+                    Edit
+                  </button>
 
-              <div
-                key={project.id}
-                className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden"
-              >
-
-                <img
-                  src={project.image}
-                  alt={project.title}
-                  className="w-full h-56 object-cover"
-                />
-
-                <div className="p-8">
-
-                  <div className="flex justify-between items-center mb-6">
-
-                    <h3 className="text-3xl font-bold">
-                      {project.title}
-                    </h3>
-
-                    <span className="bg-cyan-500/20 px-4 py-2 rounded-full text-sm">
-                      {project.status}
-                    </span>
-
-                  </div>
-
-                  <p className="text-gray-300">
-                    {project.description}
-                  </p>
-
-                  <div className="flex gap-3 mt-8 flex-wrap">
-
-                    <button
-                      onClick={() => editProject(project)}
-                      className="px-5 py-3 rounded-2xl bg-yellow-500 hover:bg-yellow-600 transition font-semibold"
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      onClick={() => deleteProject(project.id)}
-                      className="px-5 py-3 rounded-2xl bg-red-500 hover:bg-red-600 transition font-semibold"
-                    >
-                      Delete
-                    </button>
-
-                  </div>
+                  <button
+                    onClick={() => handleDelete(project.id)}
+                    className="px-5 py-3 rounded-2xl bg-red-500/20 border border-red-500/20"
+                  >
+                    Delete
+                  </button>
 
                 </div>
 
               </div>
 
-            ))}
+            </div>
 
-          </div>
+          ))}
 
-        </section>
+        </div>
 
       </div>
 
     </main>
+
   );
+
 }
