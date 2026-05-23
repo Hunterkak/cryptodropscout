@@ -1,34 +1,17 @@
 "use client";
 
 import Link from "next/link";
-
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-
-import {
-  collection,
-  onSnapshot,
-} from "firebase/firestore";
-
+import { useEffect, useMemo, useState } from "react";
+import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
 export default function Home() {
 
   const [projects, setProjects] = useState<any[]>([]);
-
   const [search, setSearch] = useState("");
-
-  const [statusFilter, setStatusFilter] =
-    useState("All");
-
-  const [categoryFilter, setCategoryFilter] =
-    useState("All");
-
-  const [language, setLanguage] =
-    useState("EN");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [language, setLanguage] = useState("EN");
 
   useEffect(() => {
 
@@ -108,83 +91,86 @@ export default function Home() {
 
     <main className="min-h-screen bg-[#020817] text-white overflow-hidden">
 
+      {/* Glow */}
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-cyan-500/20 blur-[140px] rounded-full"></div>
 
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-500/20 blur-[140px] rounded-full"></div>
 
-      {/* NAVBAR */}
+      {/* Navbar */}
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 pt-10">
 
-      <header className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 py-10 flex items-center justify-between">
+        <header className="w-full flex flex-col lg:flex-row items-center justify-between gap-8">
 
-        <h1 className="text-5xl font-black bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
-          CryptoDropScout
-        </h1>
+          <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
+            CryptoDropScout
+          </h1>
 
-        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap justify-center">
 
-          <select
-            value={language}
-            onChange={(e) =>
-              setLanguage(e.target.value)
-            }
-            className="px-4 py-3 rounded-2xl bg-[#0f172a] border border-white/10 text-white"
-          >
-            <option value="EN">EN</option>
-            <option value="BN">বাংলা</option>
-            <option value="HI">हिन्दी</option>
-          </select>
+            <select
+              value={language}
+              onChange={(e) =>
+                setLanguage(e.target.value)
+              }
+              className="px-4 py-3 rounded-2xl bg-[#0f172a] border border-white/10 text-white"
+            >
+              <option value="EN">EN</option>
+              <option value="BN">বাংলা</option>
+              <option value="HI">हिन्दी</option>
+            </select>
 
-          <a
-            href="/"
-            className="hidden md:flex px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
-          >
-            Home
-          </a>
+            <a
+              href="/"
+              className="px-5 py-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500/20 transition text-cyan-300"
+            >
+              Home
+            </a>
 
-          <a
-            href="#latest"
-            className="hidden md:flex px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
-          >
-            Latest Airdrops
-          </a>
+            <a
+              href="#latest"
+              className="px-5 py-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition text-blue-300"
+            >
+              Latest Airdrops
+            </a>
 
-          <a
-            href="#featured"
-            className="hidden md:flex px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
-          >
-            Featured
-          </a>
+            <a
+              href="#featured"
+              className="px-5 py-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition text-purple-300"
+            >
+              Featured
+            </a>
 
-          <a
-            href="https://youtube.com/@cryptodrop_scout"
-            target="_blank"
-            className="hidden md:flex px-5 py-3 rounded-2xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition"
-          >
-            YouTube
-          </a>
+            <a
+              href="https://youtube.com/@cryptodrop_scout"
+              target="_blank"
+              className="px-5 py-3 rounded-2xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition text-red-300"
+            >
+              YouTube
+            </a>
 
-          <a
-            href="https://x.com/cryptodrpscout"
-            target="_blank"
-            className="hidden md:flex px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
-          >
-            X / Twitter
-          </a>
+            <a
+              href="https://x.com/cryptodrpscout"
+              target="_blank"
+              className="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition text-white"
+            >
+              X / Twitter
+            </a>
 
-          <Link
-            href="/admin"
-            className="px-5 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold"
-          >
-            Admin
-          </Link>
+            <Link
+              href="/admin"
+              className="px-5 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold"
+            >
+              Admin
+            </Link>
 
-        </div>
+          </div>
 
-      </header>
+        </header>
 
-      {/* HERO */}
+      </div>
 
-      <section className="relative z-10 max-w-6xl mx-auto px-6 md:px-16 pt-14 pb-24 text-center">
+      {/* Hero */}
+      <section className="relative z-10 max-w-6xl mx-auto px-6 md:px-16 pt-20 pb-24 text-center">
 
         <div className="inline-flex px-6 py-3 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 mb-10">
           Latest Web3 Alpha 🚀
@@ -231,8 +217,7 @@ export default function Home() {
 
       </section>
 
-      {/* FILTERS */}
-
+      {/* Filters */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 pb-16">
 
         <div className="grid lg:grid-cols-3 gap-6">
@@ -284,8 +269,7 @@ export default function Home() {
 
       </section>
 
-      {/* FEATURED */}
-
+      {/* Featured */}
       {featuredProjects.length > 0 && (
 
         <section
@@ -312,7 +296,7 @@ export default function Home() {
               <Link
                 href={`/project/${project.id}`}
                 key={project.id}
-                className="group bg-white/5 border border-white/10 rounded-[36px] overflow-hidden hover:scale-[1.02] transition"
+                className="group bg-white/5 border border-white/10 rounded-[36px] overflow-hidden hover:scale-[1.02] hover:border-cyan-500/40 transition duration-300"
               >
 
                 <img
@@ -339,15 +323,15 @@ export default function Home() {
 
                   </div>
 
-                  <h3 className="text-4xl font-black group-hover:text-cyan-300 transition">
+                  <h3 className="text-3xl font-bold">
                     {project.title}
                   </h3>
 
-                  <p className="mt-6 text-gray-400 text-lg leading-relaxed">
+                  <p className="text-gray-400 mt-4 leading-relaxed">
                     {project.description}
                   </p>
 
-                  <div className="mt-8 inline-flex items-center gap-3 text-cyan-300 font-bold text-lg">
+                  <div className="mt-6 inline-flex px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold hover:scale-105 transition">
                     View Full Guide →
                   </div>
 
@@ -363,8 +347,7 @@ export default function Home() {
 
       )}
 
-      {/* LATEST */}
-
+      {/* Latest */}
       <section
         id="latest"
         className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 pb-24"
@@ -382,20 +365,20 @@ export default function Home() {
 
         </div>
 
-        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10">
 
           {filteredProjects.map((project) => (
 
             <Link
               href={`/project/${project.id}`}
               key={project.id}
-              className="group bg-white/5 border border-white/10 rounded-[32px] overflow-hidden hover:scale-[1.02] transition"
+              className="bg-white/5 border border-white/10 rounded-[32px] overflow-hidden hover:scale-[1.03] hover:border-cyan-500/40 transition duration-300"
             >
 
               <img
                 src={project.image}
                 alt={project.title}
-                className="w-full h-60 object-cover"
+                className="w-full h-[240px] object-cover"
               />
 
               <div className="p-6">
@@ -412,15 +395,15 @@ export default function Home() {
 
                 </div>
 
-                <h3 className="text-3xl font-black group-hover:text-cyan-300 transition">
+                <h3 className="text-2xl font-bold">
                   {project.title}
                 </h3>
 
-                <p className="mt-4 text-gray-400 leading-relaxed">
+                <p className="text-gray-400 mt-4 leading-relaxed">
                   {project.description}
                 </p>
 
-                <div className="mt-8 inline-flex items-center gap-3 text-cyan-300 font-bold">
+                <div className="mt-6 inline-flex px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold hover:scale-105 transition">
                   Open Guide →
                 </div>
 
@@ -434,8 +417,7 @@ export default function Home() {
 
       </section>
 
-      {/* FOOTER */}
-
+      {/* Footer */}
       <footer className="relative z-10 border-t border-white/10">
 
         <div className="max-w-7xl mx-auto px-6 md:px-16 py-14 flex flex-col md:flex-row items-center justify-between gap-8">
