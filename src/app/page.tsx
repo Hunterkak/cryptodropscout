@@ -11,6 +11,7 @@ import {
   onSnapshot,
   deleteDoc,
   doc,
+  updateDoc,
 } from "firebase/firestore";
 
 export default function Home() {
@@ -22,6 +23,8 @@ export default function Home() {
   const [link, setLink] = useState("");
   const [image, setImage] = useState("");
   const [tag, setTag] = useState("");
+
+  const [editingId, setEditingId] = useState("");
 
   useEffect(() => {
 
@@ -56,16 +59,51 @@ export default function Home() {
       color: "from-cyan-400 to-blue-500",
     });
 
-    setTitle("");
-    setDescription("");
-    setLink("");
-    setImage("");
-    setTag("");
+    resetForm();
   };
 
   const deleteProject = async (id: string) => {
 
     await deleteDoc(doc(db, "projects", id));
+
+  };
+
+  const editProject = (project: any) => {
+
+    setEditingId(project.id);
+
+    setTitle(project.title);
+    setDescription(project.description);
+    setLink(project.link);
+    setImage(project.image);
+    setTag(project.tags?.[0] || "");
+
+  };
+
+  const updateProject = async () => {
+
+    if (!editingId) return;
+
+    await updateDoc(doc(db, "projects", editingId), {
+      title,
+      description,
+      link,
+      image,
+      tags: [tag || "Web3"],
+    });
+
+    resetForm();
+  };
+
+  const resetForm = () => {
+
+    setEditingId("");
+
+    setTitle("");
+    setDescription("");
+    setLink("");
+    setImage("");
+    setTag("");
 
   };
 
@@ -106,7 +144,7 @@ export default function Home() {
       <section className="max-w-4xl mx-auto mt-20 bg-white/5 border border-white/10 rounded-3xl p-10">
 
         <h2 className="text-4xl font-bold mb-10">
-          Add New Project
+          {editingId ? "Edit Project" : "Add New Project"}
         </h2>
 
         <div className="grid md:grid-cols-2 gap-6">
@@ -152,12 +190,36 @@ export default function Home() {
           className="w-full mt-6 px-5 py-4 rounded-2xl bg-black/20 border border-white/10 min-h-[140px]"
         />
 
-        <button
-          onClick={addProject}
-          className="mt-8 px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold"
-        >
-          Publish Project
-        </button>
+        <div className="flex gap-4 mt-8">
+
+          {editingId ? (
+
+            <button
+              onClick={updateProject}
+              className="px-8 py-4 rounded-2xl bg-yellow-500 hover:bg-yellow-600 transition font-semibold"
+            >
+              Update Project
+            </button>
+
+          ) : (
+
+            <button
+              onClick={addProject}
+              className="px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold"
+            >
+              Publish Project
+            </button>
+
+          )}
+
+          <button
+            onClick={resetForm}
+            className="px-8 py-4 rounded-2xl bg-gray-700 hover:bg-gray-800 transition font-semibold"
+          >
+            Reset
+          </button>
+
+        </div>
 
       </section>
 
@@ -218,7 +280,7 @@ export default function Home() {
 
                 </div>
 
-                <div className="flex gap-4 mt-8">
+                <div className="flex gap-3 mt-8 flex-wrap">
 
                   <Link
                     href={project.link}
@@ -226,6 +288,13 @@ export default function Home() {
                   >
                     View Project
                   </Link>
+
+                  <button
+                    onClick={() => editProject(project)}
+                    className="px-6 py-3 rounded-2xl bg-yellow-500 hover:bg-yellow-600 transition font-semibold"
+                  >
+                    Edit
+                  </button>
 
                   <button
                     onClick={() => deleteProject(project.id)}
