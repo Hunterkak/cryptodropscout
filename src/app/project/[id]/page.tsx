@@ -31,7 +31,8 @@ export default function ProjectPage({
         params.id
       );
 
-      const docSnap = await getDoc(docRef);
+      const docSnap =
+        await getDoc(docRef);
 
       if (docSnap.exists()) {
 
@@ -53,7 +54,15 @@ export default function ProjectPage({
     return (
 
       <main className="min-h-screen bg-[#020817] flex items-center justify-center text-white text-3xl">
-        Loading Project...
+
+        <div className="text-center">
+
+          <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-8"></div>
+
+          Loading Guide...
+
+        </div>
+
       </main>
 
     );
@@ -64,20 +73,66 @@ export default function ProjectPage({
 
     <main className="min-h-screen bg-[#020817] text-white overflow-hidden">
 
+      {/* Glow */}
+
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-cyan-500/20 blur-[140px] rounded-full"></div>
 
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-500/20 blur-[140px] rounded-full"></div>
 
       <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 py-20">
 
-        <Link
-          href="/"
-          className="inline-flex px-6 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
-        >
-          ← Back
-        </Link>
+        {/* Top */}
 
-        <div className="grid lg:grid-cols-2 gap-16 items-center mt-16">
+        <div className="flex flex-wrap items-center justify-between gap-6 mb-14">
+
+          <Link
+            href="/"
+            className="inline-flex px-6 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
+          >
+            ← Back Home
+          </Link>
+
+          <div className="flex flex-wrap gap-4">
+
+            {project.twitter && (
+
+              <a
+                href={project.twitter}
+                target="_blank"
+                className="px-6 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
+              >
+                X / Twitter
+              </a>
+
+            )}
+
+            {project.youtube && (
+
+              <a
+                href={project.youtube}
+                target="_blank"
+                className="px-6 py-4 rounded-2xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition text-red-300"
+              >
+                Watch Guide
+              </a>
+
+            )}
+
+            <a
+              href="https://github.com/Hunterkak"
+              target="_blank"
+              className="px-6 py-4 rounded-2xl bg-gray-500/10 border border-gray-500/20 hover:bg-gray-500/20 transition"
+            >
+              GitHub
+            </a>
+
+          </div>
+
+        </div>
+
+        {/* Hero */}
+
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
 
           <div>
 
@@ -131,30 +186,6 @@ export default function ProjectPage({
 
               )}
 
-              {project.twitter && (
-
-                <a
-                  href={project.twitter}
-                  target="_blank"
-                  className="px-8 py-5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
-                >
-                  Twitter/X →
-                </a>
-
-              )}
-
-              {project.youtube && (
-
-                <a
-                  href={project.youtube}
-                  target="_blank"
-                  className="px-8 py-5 rounded-2xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition"
-                >
-                  Watch Guide →
-                </a>
-
-              )}
-
             </div>
 
           </div>
@@ -173,13 +204,13 @@ export default function ProjectPage({
 
       </section>
 
-      {/* GUIDE */}
+      {/* Guide */}
 
       <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 pb-24">
 
         <div className="bg-white/5 border border-white/10 rounded-[36px] p-10">
 
-          <h2 className="text-5xl font-black mb-10">
+          <h2 className="text-5xl font-black mb-12">
             Step-by-Step Guide
           </h2>
 
