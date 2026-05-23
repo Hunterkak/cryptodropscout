@@ -7,11 +7,29 @@ import { featuredProjects, airdrops } from "./data/projects";
 export default function Home() {
 
   const [search, setSearch] = useState("");
+  const [activeFilter, setActiveFilter] = useState("All");
 
-  const filteredProjects = featuredProjects.filter((project) =>
-    project.title.toLowerCase().includes(search.toLowerCase()) ||
-    project.tags.join(" ").toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredProjects = featuredProjects.filter((project) => {
+
+    const matchesSearch =
+      project.title.toLowerCase().includes(search.toLowerCase()) ||
+      project.tags.join(" ").toLowerCase().includes(search.toLowerCase());
+
+    const matchesFilter =
+      activeFilter === "All" ||
+      project.tags.includes(activeFilter);
+
+    return matchesSearch && matchesFilter;
+  });
+
+  const filters = [
+    "All",
+    "Node",
+    "Testnet",
+    "AI",
+    "Rewards",
+    "Web3",
+  ];
 
   return (
     <main className="min-h-screen bg-[#020817] text-white overflow-hidden">
@@ -43,57 +61,23 @@ export default function Home() {
 
         </div>
 
-        <div className="md:hidden flex gap-4 text-sm">
-
-          <a href="/" className="bg-white/10 px-3 py-2 rounded-xl">
-            Home
-          </a>
-
-          <a href="/guides" className="bg-white/10 px-3 py-2 rounded-xl">
-            Guides
-          </a>
-
-        </div>
-
       </nav>
 
       {/* Hero */}
-      <section className="relative text-center py-32 px-6">
+      <section className="relative text-center py-28 px-6">
 
-        <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/10 via-transparent to-transparent blur-3xl"></div>
-
-        <h1 className="relative text-6xl md:text-8xl font-extrabold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
+        <h1 className="text-6xl md:text-8xl font-extrabold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
           CryptoDropScout
         </h1>
 
-        <p className="relative mt-8 text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+        <p className="mt-8 text-xl text-gray-300 max-w-3xl mx-auto">
           Discover Early Web3 Opportunities, Nodes, Testnets & Airdrops Before Everyone Else.
         </p>
-
-        <div className="relative flex justify-center gap-6 mt-12 flex-wrap">
-
-          <a
-            href="https://t.me/CryptoDropScoutt"
-            target="_blank"
-            className="px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold text-lg hover:scale-105 transition"
-          >
-            Join Telegram
-          </a>
-
-          <a
-            href="https://youtube.com/@cryptodrop_scout"
-            target="_blank"
-            className="px-8 py-4 rounded-2xl border border-white/10 bg-white/5 font-semibold text-lg hover:bg-white/10 transition"
-          >
-            YouTube Channel
-          </a>
-
-        </div>
 
       </section>
 
       {/* Search */}
-      <section className="px-8 pb-20">
+      <section className="px-8 pb-10">
 
         <div className="max-w-2xl mx-auto">
 
@@ -104,6 +88,31 @@ export default function Home() {
             onChange={(e) => setSearch(e.target.value)}
             className="w-full px-6 py-5 rounded-2xl bg-white/5 border border-white/10 outline-none text-white placeholder:text-gray-500 focus:border-cyan-400 transition"
           />
+
+        </div>
+
+      </section>
+
+      {/* Filters */}
+      <section className="px-8 pb-20">
+
+        <div className="flex justify-center flex-wrap gap-4">
+
+          {filters.map((filter) => (
+
+            <button
+              key={filter}
+              onClick={() => setActiveFilter(filter)}
+              className={`px-5 py-3 rounded-2xl transition font-medium ${
+                activeFilter === filter
+                  ? "bg-cyan-500 text-white"
+                  : "bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10"
+              }`}
+            >
+              {filter}
+            </button>
+
+          ))}
 
         </div>
 
@@ -182,104 +191,6 @@ export default function Home() {
         </div>
 
       </section>
-
-      {/* Active Airdrops */}
-      <section className="px-8 pb-28">
-
-        <h2 className="text-5xl font-bold text-center mb-16">
-          Active Airdrops
-        </h2>
-
-        <div className="grid md:grid-cols-2 gap-10">
-
-          {airdrops.map((airdrop) => (
-
-            <div
-              key={airdrop.title}
-              className="bg-white/5 border border-cyan-500/20 rounded-3xl p-8 backdrop-blur-xl hover:scale-[1.02] transition"
-            >
-
-              <h3
-                className={`text-4xl font-bold bg-gradient-to-r ${airdrop.color} bg-clip-text text-transparent`}
-              >
-                {airdrop.title}
-              </h3>
-
-              <p className="text-gray-300 text-lg mt-6 leading-relaxed">
-                {airdrop.description}
-              </p>
-
-              <div className="flex gap-3 flex-wrap mt-6">
-
-                {airdrop.tags.map((tag) => (
-
-                  <span
-                    key={tag}
-                    className="px-4 py-2 rounded-xl bg-white/10 text-sm"
-                  >
-                    {tag}
-                  </span>
-
-                ))}
-
-              </div>
-
-              <a
-                href={airdrop.link}
-                target="_blank"
-                className={`inline-block mt-8 px-6 py-3 rounded-2xl bg-gradient-to-r ${airdrop.color} font-semibold hover:opacity-90 transition`}
-              >
-                {airdrop.button}
-              </a>
-
-            </div>
-
-          ))}
-
-        </div>
-
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-white/10 py-16 text-center bg-white/5 backdrop-blur-xl">
-
-        <h2 className="text-5xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
-          CryptoDropScout
-        </h2>
-
-        <p className="text-gray-400 mt-5 text-lg">
-          Stay Informed • Stay Ahead • Stay Connected
-        </p>
-
-        <div className="flex justify-center gap-8 mt-10 flex-wrap">
-
-          <a
-            href="https://t.me/CryptoDropScoutt"
-            target="_blank"
-            className="px-6 py-3 rounded-2xl bg-cyan-500/10 hover:bg-cyan-500/20 transition"
-          >
-            Telegram
-          </a>
-
-          <a
-            href="https://youtube.com/@cryptodrop_scout"
-            target="_blank"
-            className="px-6 py-3 rounded-2xl bg-red-500/10 hover:bg-red-500/20 transition"
-          >
-            YouTube
-          </a>
-
-          <a
-            href="https://x.com/cryptodrpscout"
-            target="_blank"
-            className="px-6 py-3 rounded-2xl bg-white/10 hover:bg-white/20 transition"
-          >
-            Twitter / X
-          </a>
-
-        </div>
-
-      </footer>
 
     </main>
   );
