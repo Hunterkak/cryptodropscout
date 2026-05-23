@@ -80,6 +80,13 @@ export default function Home() {
               key={project.title}
               className="bg-[#111827] border border-purple-500/20 rounded-3xl p-8"
             >
+
+              <img
+                src={project.image}
+                alt={project.title}
+                className="w-full h-52 object-cover rounded-2xl mb-6"
+              />
+
               <div className="flex justify-between items-center mb-6">
                 <h3
                   className={`text-4xl font-bold bg-gradient-to-r ${project.color} text-transparent bg-clip-text`}
