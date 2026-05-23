@@ -1,460 +1,326 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-
-import {
-  collection,
-  onSnapshot,
-} from "firebase/firestore";
-
-import { db } from "../lib/firebase";
 
 export default function Home() {
 
-  const [projects, setProjects] =
-    useState<any[]>([]);
+  const hotAirdrops = [
+    {
+      name: "Monad",
+      status: "Potential",
+      difficulty: "Easy",
+      reward: "$500+",
+      image:
+        "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1200&auto=format&fit=crop",
+    },
 
-  const [search, setSearch] =
-    useState("");
+    {
+      name: "LayerZero",
+      status: "Hot",
+      difficulty: "Medium",
+      reward: "$1000+",
+      image:
+        "https://images.unsplash.com/photo-1642104704074-907c0698cbd9?q=80&w=1200&auto=format&fit=crop",
+    },
 
-  const [statusFilter, setStatusFilter] =
-    useState("All");
+    {
+      name: "Scroll",
+      status: "Active",
+      difficulty: "Easy",
+      reward: "$300+",
+      image:
+        "https://images.unsplash.com/photo-1621761191319-c6fb62004040?q=80&w=1200&auto=format&fit=crop",
+    },
 
-  const [categoryFilter, setCategoryFilter] =
-    useState("All");
-
-  const [language, setLanguage] =
-    useState("EN");
-
-  useEffect(() => {
-
-    const unsubscribe = onSnapshot(
-      collection(db, "projects"),
-      (snapshot) => {
-
-        const data = snapshot.docs.map(
-          (doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          })
-        );
-
-        setProjects(data);
-
-      }
-    );
-
-    return () => unsubscribe();
-
-  }, []);
-
-  const categories = useMemo(() => {
-
-    const allTags = projects.flatMap(
-      (project) => project.tags || []
-    );
-
-    return [
-      "All",
-      ...Array.from(new Set(allTags)),
-    ];
-
-  }, [projects]);
-
-  const filteredProjects = projects.filter(
-    (project) => {
-
-      const matchesSearch =
-
-        project.title
-          ?.toLowerCase()
-          ?.includes(search.toLowerCase()) ||
-
-        project.description
-          ?.toLowerCase()
-          ?.includes(search.toLowerCase()) ||
-
-        project.tags
-          ?.join(" ")
-          ?.toLowerCase()
-          ?.includes(search.toLowerCase());
-
-      const matchesStatus =
-        statusFilter === "All"
-          ? true
-          : project.status === statusFilter;
-
-      const matchesCategory =
-        categoryFilter === "All"
-          ? true
-          : project.tags?.includes(
-              categoryFilter
-            );
-
-      return (
-        matchesSearch &&
-        matchesStatus &&
-        matchesCategory
-      );
-
-    }
-  );
-
-  const featuredProjects =
-    filteredProjects.filter(
-      (project) => project.featured
-    );
+    {
+      name: "ZetaChain",
+      status: "Ended",
+      difficulty: "Hard",
+      reward: "$800+",
+      image:
+        "https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=1200&auto=format&fit=crop",
+    },
+  ];
 
   return (
 
-    <main className="min-h-screen bg-[#020817] text-white overflow-hidden">
+    <main className="min-h-screen bg-[#050816] text-white overflow-hidden">
 
       {/* Glow */}
 
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-cyan-500/20 blur-[140px] rounded-full"></div>
+      <div className="fixed top-0 left-0 w-[500px] h-[500px] bg-cyan-500/10 blur-[140px] rounded-full"></div>
 
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-500/20 blur-[140px] rounded-full"></div>
+      <div className="fixed bottom-0 right-0 w-[500px] h-[500px] bg-purple-500/10 blur-[140px] rounded-full"></div>
 
       {/* Navbar */}
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 pt-10">
+      <header className="relative z-20 border-b border-white/10 backdrop-blur-xl">
 
-        <header className="w-full flex flex-col xl:flex-row items-center justify-between gap-8">
+        <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
 
-          <h1 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
-            CryptoDropScout
-          </h1>
+          {/* Logo */}
 
-          <div className="flex flex-wrap items-center justify-center gap-4">
+          <div className="flex items-center gap-3">
 
-            {/* Language */}
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-cyan-400 to-purple-500 flex items-center justify-center font-black">
+              C
+            </div>
 
-            <select
-              value={language}
-              onChange={(e) =>
-                setLanguage(e.target.value)
-              }
-              className="px-4 py-3 rounded-2xl bg-[#0f172a] border border-white/10 text-white"
-            >
-              <option value="EN">
-                🇺🇸 English
+            <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+              CryptoDropScout
+            </h1>
+
+          </div>
+
+          {/* Menu */}
+
+          <nav className="hidden lg:flex items-center gap-8 text-gray-300">
+
+            <Link href="/">Home</Link>
+
+            <Link href="/airdrops">
+              Airdrops
+            </Link>
+
+            <Link href="/testnets">
+              Testnets
+            </Link>
+
+            <Link href="/faucets">
+              Faucets
+            </Link>
+
+            <Link href="/guides">
+              Guides
+            </Link>
+
+            <Link href="/blog">
+              Blog
+            </Link>
+
+            <Link href="/tools">
+              Tools
+            </Link>
+
+          </nav>
+
+          {/* Right */}
+
+          <div className="flex items-center gap-4">
+
+            <input
+              type="text"
+              placeholder="Search airdrops..."
+              className="hidden md:flex px-5 py-3 rounded-2xl bg-white/5 border border-white/10 outline-none"
+            />
+
+            <select className="px-4 py-3 rounded-2xl bg-white/5 border border-white/10">
+
+              <option>
+                🇺🇸 EN
               </option>
 
-              <option value="BN">
-                🇧🇩 বাংলা
+              <option>
+                🇧🇩 BN
               </option>
 
-              <option value="HI">
-                🇮🇳 हिन्दी
+              <option>
+                🇮🇳 HI
               </option>
 
             </select>
 
-            {/* Buttons */}
-
-            <a
-              href="/"
-              className="px-5 py-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500/20 transition text-cyan-300"
-            >
-              Home
-            </a>
-
-            <a
-              href="#latest"
-              className="px-5 py-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition text-blue-300"
-            >
-              Latest
-            </a>
-
-            <a
-              href="#featured"
-              className="px-5 py-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition text-purple-300"
-            >
-              Featured
-            </a>
-
-            <a
-              href="https://youtube.com/@cryptodrop_scout"
-              target="_blank"
-              className="px-5 py-3 rounded-2xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition text-red-300"
-            >
-              YouTube
-            </a>
-
           </div>
 
-        </header>
+        </div>
 
-      </div>
+      </header>
 
       {/* Hero */}
 
-      <section className="relative z-10 max-w-6xl mx-auto px-6 md:px-16 pt-20 pb-24 text-center">
+      <section className="relative z-10 max-w-7xl mx-auto px-6 py-24 grid lg:grid-cols-2 gap-16 items-center">
 
-        <div className="inline-flex px-6 py-3 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 mb-10">
-          Latest Web3 Alpha 🚀
-        </div>
+        {/* Left */}
 
-        <h2 className="text-6xl md:text-8xl font-black leading-tight">
+        <div>
 
-          {
-            language === "EN"
-              ? "Discover Early"
-              : language === "BN"
-              ? "নতুন এয়ারড্রপ খুঁজুন"
-              : "नई एयरड्रॉप खोजें"
-          }
-
-          <span className="block bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
-
-            {
-              language === "EN"
-                ? "Airdrop Opportunities"
-                : language === "BN"
-                ? "এয়ারড্রপ সুযোগ"
-                : "एयरड्रॉप अवसर"
-            }
-
-          </span>
-
-        </h2>
-
-        <p className="mt-10 text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto">
-          Find promising crypto testnets, nodes, AI projects and Web3 opportunities before everyone else.
-        </p>
-
-        <div className="mt-10">
-
-          <a
-            href="#latest"
-            className="inline-flex px-8 py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-lg hover:scale-105 transition"
-          >
-            Explore Airdrops →
-          </a>
-
-        </div>
-
-      </section>
-
-      {/* Filters */}
-
-      <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 pb-16">
-
-        <div className="grid lg:grid-cols-3 gap-6">
-
-          <input
-            type="text"
-            placeholder="Search projects..."
-            value={search}
-            onChange={(e) =>
-              setSearch(e.target.value)
-            }
-            className="px-6 py-5 rounded-2xl bg-[#0f172a] border border-white/10 outline-none text-white"
-          />
-
-          <select
-            value={statusFilter}
-            onChange={(e) =>
-              setStatusFilter(e.target.value)
-            }
-            className="px-6 py-5 rounded-2xl bg-[#0f172a] border border-white/10 outline-none text-white"
-          >
-            <option>All</option>
-            <option>Active</option>
-            <option>Hot</option>
-            <option>Potential</option>
-            <option>Confirmed</option>
-            <option>Ended</option>
-          </select>
-
-          <select
-            value={categoryFilter}
-            onChange={(e) =>
-              setCategoryFilter(e.target.value)
-            }
-            className="px-6 py-5 rounded-2xl bg-[#0f172a] border border-white/10 outline-none text-white"
-          >
-
-            {categories.map((category) => (
-
-              <option key={category}>
-                {category}
-              </option>
-
-            ))}
-
-          </select>
-
-        </div>
-
-      </section>
-
-      {/* Featured */}
-
-      {featuredProjects.length > 0 && (
-
-        <section
-          id="featured"
-          className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 pb-24"
-        >
-
-          <div className="flex items-center gap-4 mb-12">
-
-            <div className="w-14 h-14 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center text-2xl">
-              🔥
-            </div>
-
-            <h2 className="text-5xl font-black">
-              Featured Airdrops
-            </h2>
-
+          <div className="inline-flex px-5 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 mb-8">
+            🚀 Find Legit Airdrops & Earn Early
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-10">
+          <h2 className="text-6xl md:text-7xl font-black leading-tight">
 
-            {featuredProjects.map((project) => (
+            Your Ultimate Guide to
 
-              <Link
-                href={`/project/${project.id}`}
-                key={project.id}
-                className="group bg-white/5 border border-white/10 rounded-[36px] overflow-hidden hover:scale-[1.02] hover:border-cyan-500/40 transition duration-300"
-              >
+            <span className="block bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
 
-                <img
-                  src={project.image}
-                  alt={project.title}
-                  className="w-full h-[320px] object-cover"
-                />
+              Airdrops & Testnets
 
-                <div className="p-8">
+            </span>
 
-                  <div className="flex flex-wrap gap-3 mb-6">
+          </h2>
 
-                    <span className="px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-sm">
-                      {project.status}
-                    </span>
+          <p className="mt-8 text-xl text-gray-400 leading-relaxed max-w-2xl">
+            Discover verified airdrops, testnet opportunities, nodes and crypto tools — all in one place.
+          </p>
 
-                    <span className="px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm">
-                      {project.reward}
-                    </span>
+          {/* Buttons */}
 
-                  </div>
-
-                  <h3 className="text-3xl font-bold">
-                    {project.title}
-                  </h3>
-
-                  <p className="text-gray-400 mt-4 leading-relaxed">
-                    {project.description}
-                  </p>
-
-                  <div className="mt-6 inline-flex px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold hover:scale-105 transition">
-                    Open Guide →
-                  </div>
-
-                </div>
-
-              </Link>
-
-            ))}
-
-          </div>
-
-        </section>
-
-      )}
-
-      {/* Latest */}
-
-      <section
-        id="latest"
-        className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 pb-24"
-      >
-
-        <div className="flex items-center justify-between gap-6 mb-12 flex-wrap">
-
-          <div className="flex items-center gap-4">
-
-            <div className="w-14 h-14 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center text-2xl">
-              🚀
-            </div>
-
-            <h2 className="text-5xl font-black">
-              Latest Airdrops
-            </h2>
-
-          </div>
-
-          {/* Social */}
-
-          <div className="flex flex-wrap gap-4">
-
-            <a
-              href="https://x.com/cryptodrpscout"
-              target="_blank"
-              className="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
-            >
-              X / Twitter
-            </a>
-
-            <a
-              href="https://github.com/Hunterkak"
-              target="_blank"
-              className="px-5 py-3 rounded-2xl bg-gray-500/10 border border-gray-500/20 hover:bg-gray-500/20 transition"
-            >
-              GitHub
-            </a>
-
-          </div>
-
-        </div>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10">
-
-          {filteredProjects.map((project) => (
+          <div className="mt-10 flex flex-wrap gap-5">
 
             <Link
-              href={`/project/${project.id}`}
-              key={project.id}
-              className="bg-white/5 border border-white/10 rounded-[32px] overflow-hidden hover:scale-[1.03] hover:border-cyan-500/40 transition duration-300"
+              href="/airdrops"
+              className="px-8 py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold hover:scale-105 transition"
+            >
+              Explore Airdrops
+            </Link>
+
+            <Link
+              href="/testnets"
+              className="px-8 py-5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
+            >
+              View Testnets
+            </Link>
+
+          </div>
+
+        </div>
+
+        {/* Right */}
+
+        <div className="relative">
+
+          <div className="absolute inset-0 bg-purple-500/20 blur-[120px] rounded-full"></div>
+
+          <img
+            src="https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=1200&auto=format&fit=crop"
+            alt="Crypto"
+            className="relative z-10 rounded-[40px] border border-white/10 shadow-2xl"
+          />
+
+        </div>
+
+      </section>
+
+      {/* Stats */}
+
+      <section className="relative z-10 max-w-7xl mx-auto px-6 pb-20">
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+
+          {[
+            {
+              number: "120+",
+              label: "Active Airdrops",
+            },
+
+            {
+              number: "80+",
+              label: "Live Testnets",
+            },
+
+            {
+              number: "50+",
+              label: "Faucets",
+            },
+
+            {
+              number: "10K+",
+              label: "Happy Users",
+            },
+
+          ].map((item, index) => (
+
+            <div
+              key={index}
+              className="p-8 rounded-[32px] bg-white/5 border border-white/10 backdrop-blur-xl"
+            >
+
+              <h3 className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+                {item.number}
+              </h3>
+
+              <p className="mt-3 text-gray-400">
+                {item.label}
+              </p>
+
+            </div>
+
+          ))}
+
+        </div>
+
+      </section>
+
+      {/* Hot Airdrops */}
+
+      <section className="relative z-10 max-w-7xl mx-auto px-6 pb-24">
+
+        <div className="flex items-center justify-between mb-10">
+
+          <h2 className="text-5xl font-black">
+            🔥 Hot Airdrops
+          </h2>
+
+          <Link
+            href="/airdrops"
+            className="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
+          >
+            View All
+          </Link>
+
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+
+          {hotAirdrops.map((project, index) => (
+
+            <div
+              key={index}
+              className="rounded-[32px] overflow-hidden bg-white/5 border border-white/10 hover:border-cyan-500/30 hover:scale-[1.02] transition"
             >
 
               <img
                 src={project.image}
-                alt={project.title}
-                className="w-full h-[240px] object-cover"
+                alt={project.name}
+                className="w-full h-[220px] object-cover"
               />
 
               <div className="p-6">
 
-                <div className="flex flex-wrap gap-3 mb-5">
+                <div className="flex items-center justify-between mb-5">
 
                   <span className="px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-sm">
                     {project.status}
                   </span>
 
-                  <span className="px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm">
+                  <span className="text-green-400 font-semibold">
                     {project.reward}
                   </span>
 
                 </div>
 
                 <h3 className="text-2xl font-bold">
-                  {project.title}
+                  {project.name}
                 </h3>
 
-                <p className="text-gray-400 mt-4 leading-relaxed">
-                  {project.description}
+                <p className="text-gray-400 mt-4">
+                  Difficulty: {project.difficulty}
                 </p>
 
-                <div className="mt-6 inline-flex px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold hover:scale-105 transition">
-                  Open Guide →
+                <div className="mt-6">
+
+                  <button className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold hover:scale-105 transition">
+
+                    Open Guide →
+
+                  </button>
+
                 </div>
 
               </div>
 
-            </Link>
+            </div>
 
           ))}
 
@@ -466,28 +332,44 @@ export default function Home() {
 
       <footer className="relative z-10 border-t border-white/10">
 
-        <div className="max-w-7xl mx-auto px-6 md:px-16 py-14 flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col lg:flex-row items-center justify-between gap-8">
 
           <div>
 
-            <h2 className="text-4xl font-black bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
+            <h2 className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
               CryptoDropScout
             </h2>
 
-            <p className="text-gray-400 mt-4">
+            <p className="mt-4 text-gray-400">
               Stay Informed • Stay Ahead • Stay Connected
             </p>
 
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
 
             <a
-              href="https://t.me/CryptoDropScoutt"
+              href="https://youtube.com/@cryptodrop_scout"
               target="_blank"
-              className="px-6 py-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500/20 transition"
+              className="px-6 py-4 rounded-2xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition"
             >
-              Telegram
+              YouTube
+            </a>
+
+            <a
+              href="https://x.com/cryptodrpscout"
+              target="_blank"
+              className="px-6 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
+            >
+              X / Twitter
+            </a>
+
+            <a
+              href="https://github.com/Hunterkak"
+              target="_blank"
+              className="px-6 py-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition"
+            >
+              GitHub
             </a>
 
           </div>
