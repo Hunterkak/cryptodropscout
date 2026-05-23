@@ -52,8 +52,8 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#020817] text-white overflow-hidden">
 
-      {/* Background Glow */}
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-cyan-500/20 blur-[140px] rounded-full"></div>
+
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-500/20 blur-[140px] rounded-full"></div>
 
       {/* Navbar */}
@@ -83,7 +83,7 @@ export default function Home() {
 
           <Link
             href="/admin"
-            className="px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold shadow-lg shadow-cyan-500/20 hover:scale-105 transition"
+            className="px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold hover:scale-105 transition"
           >
             Admin
           </Link>
@@ -106,49 +106,8 @@ export default function Home() {
         </h1>
 
         <p className="mt-8 text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-          Explore high-potential testnets, nodes, AI projects, exchanges & early Web3 ecosystems before the crowd.
+          Explore high-potential testnets, nodes, AI projects & Web3 ecosystems before the crowd.
         </p>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto mt-20">
-
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl">
-            <h3 className="text-5xl font-black text-cyan-400">
-              250+
-            </h3>
-            <p className="mt-3 text-gray-400">
-              Active Airdrops
-            </p>
-          </div>
-
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl">
-            <h3 className="text-5xl font-black text-purple-400">
-              80+
-            </h3>
-            <p className="mt-3 text-gray-400">
-              Testnets
-            </p>
-          </div>
-
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl">
-            <h3 className="text-5xl font-black text-pink-400">
-              120K+
-            </h3>
-            <p className="mt-3 text-gray-400">
-              Community Reach
-            </p>
-          </div>
-
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-xl">
-            <h3 className="text-5xl font-black text-yellow-400">
-              24/7
-            </h3>
-            <p className="mt-3 text-gray-400">
-              Live Tracking
-            </p>
-          </div>
-
-        </div>
 
       </section>
 
@@ -182,21 +141,9 @@ export default function Home() {
       {/* Projects */}
       <section className="relative z-10 px-6 md:px-16 py-28">
 
-        <div className="flex items-center justify-between mb-16 flex-wrap gap-4">
-
-          <div>
-
-            <h2 className="text-5xl font-black">
-              Featured Projects
-            </h2>
-
-            <p className="text-gray-400 mt-4 text-lg">
-              Early opportunities curated by CryptoDropScout.
-            </p>
-
-          </div>
-
-        </div>
+        <h2 className="text-5xl font-black mb-16">
+          Featured Projects
+        </h2>
 
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-10">
 
@@ -249,10 +196,10 @@ export default function Home() {
                 </div>
 
                 <Link
-                  href={project.link}
+                  href={`/project/${project.id}`}
                   className="inline-flex items-center gap-3 mt-8 px-6 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold hover:scale-105 transition"
                 >
-                  View Project →
+                  View Details →
                 </Link>
 
               </div>
