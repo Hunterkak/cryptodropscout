@@ -5,8 +5,10 @@ export const featuredProjects = [
       "Early node opportunity with strong community growth and possible future rewards.",
     badge: "Active",
     tags: ["Node", "Testnet", "Early"],
+    button: "View Guide",
     link: "/guides/dac-chain",
-    color: "from-cyan-400 to-blue-500",
+    color: "from-cyan-500 to-blue-500",
+    image: "/projects/dac.png",
   },
 
   {
@@ -15,8 +17,10 @@ export const featuredProjects = [
       "AI-powered decentralized ecosystem with active quests and strong community engagement.",
     badge: "Trending",
     tags: ["AI", "Quest", "Rewards"],
+    button: "View Guide",
     link: "#",
-    color: "from-blue-400 to-indigo-500",
+    color: "from-blue-500 to-purple-500",
+    image: "/projects/quip.png",
   },
 
   {
@@ -25,8 +29,22 @@ export const featuredProjects = [
       "One of the hottest modular blockchain ecosystems in Web3 with massive hype.",
     badge: "Hot",
     tags: ["Modular", "Web3", "Alpha"],
+    button: "View Guide",
     link: "#",
     color: "from-purple-400 to-pink-500",
+    image: "/projects/linera.png",
+  },
+
+  {
+    title: "Base Ecosystem",
+    description:
+      "Explore early Base ecosystem projects and farm future rewards.",
+    badge: "New",
+    tags: ["Base", "Ecosystem", "Rewards"],
+    button: "Explore",
+    link: "#",
+    color: "from-cyan-500 to-blue-500",
+    image: "/projects/base.png",
   },
 ];
 
