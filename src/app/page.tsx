@@ -27,6 +27,9 @@ export default function Home() {
 
   const [editingId, setEditingId] = useState("");
 
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("All");
+
   useEffect(() => {
 
     const unsubscribe = onSnapshot(
@@ -112,11 +115,26 @@ export default function Home() {
 
   };
 
-  const activeProjects = projects.filter(
+  const filteredProjects = projects.filter((project) => {
+
+    const matchesSearch =
+      project.title?.toLowerCase().includes(search.toLowerCase()) ||
+      project.description?.toLowerCase().includes(search.toLowerCase()) ||
+      project.tags?.join(" ").toLowerCase().includes(search.toLowerCase());
+
+    const matchesStatus =
+      filterStatus === "All" ||
+      project.status === filterStatus;
+
+    return matchesSearch && matchesStatus;
+
+  });
+
+  const activeProjects = filteredProjects.filter(
     (project) => project.status !== "Ended"
   );
 
-  const endedProjects = projects.filter(
+  const endedProjects = filteredProjects.filter(
     (project) => project.status === "Ended"
   );
 
@@ -142,6 +160,33 @@ export default function Home() {
         <p className="mt-6 text-xl text-gray-300 max-w-3xl mx-auto">
           Discover Early Web3 Opportunities, Nodes, Testnets & Airdrops Before Everyone Else.
         </p>
+
+      </section>
+
+      {/* Search + Filter */}
+      <section className="max-w-5xl mx-auto mt-20 grid md:grid-cols-2 gap-6">
+
+        <input
+          type="text"
+          placeholder="Search projects..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="px-6 py-4 rounded-2xl bg-white/5 border border-white/10"
+        />
+
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          className="px-6 py-4 rounded-2xl bg-white/5 border border-white/10"
+        >
+          <option>All</option>
+          <option>Active</option>
+          <option>Upcoming</option>
+          <option>Hot</option>
+          <option>Confirmed</option>
+          <option>Potential</option>
+          <option>Ended</option>
+        </select>
 
       </section>
 
@@ -208,7 +253,7 @@ export default function Home() {
           className="w-full mt-6 px-5 py-4 rounded-2xl bg-black/20 border border-white/10 min-h-[140px]"
         />
 
-        <div className="flex gap-4 mt-8">
+        <div className="flex gap-4 mt-8 flex-wrap">
 
           {editingId ? (
 
