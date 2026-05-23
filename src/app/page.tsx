@@ -4,8 +4,10 @@ import Link from "next/link";
 
 export default function Home() {
 
-  const hotAirdrops = [
+  const projects = [
+
     {
+      id: "monad-testnet",
       name: "Monad",
       status: "Potential",
       difficulty: "Easy",
@@ -15,15 +17,17 @@ export default function Home() {
     },
 
     {
+      id: "layerzero",
       name: "LayerZero",
       status: "Hot",
       difficulty: "Medium",
-      reward: "$1000+",
+      reward: "$1200+",
       image:
         "https://images.unsplash.com/photo-1642104704074-907c0698cbd9?q=80&w=1200&auto=format&fit=crop",
     },
 
     {
+      id: "scroll",
       name: "Scroll",
       status: "Active",
       difficulty: "Easy",
@@ -33,13 +37,15 @@ export default function Home() {
     },
 
     {
-      name: "ZetaChain",
-      status: "Ended",
-      difficulty: "Hard",
-      reward: "$800+",
+      id: "base",
+      name: "Base",
+      status: "Live",
+      difficulty: "Easy",
+      reward: "$700+",
       image:
-        "https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=1200&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1621504450181-5d356f61d307?q=80&w=1200&auto=format&fit=crop",
     },
+
   ];
 
   return (
@@ -54,51 +60,70 @@ export default function Home() {
 
       {/* Navbar */}
 
-      <header className="relative z-20 border-b border-white/10 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#050816]/80 backdrop-blur-xl">
 
         <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
 
           {/* Logo */}
 
-          <div className="flex items-center gap-3">
+          <Link
+            href="/"
+            className="flex items-center gap-3"
+          >
 
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-cyan-400 to-purple-500 flex items-center justify-center font-black">
               C
             </div>
 
-            <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
               CryptoDropScout
             </h1>
 
-          </div>
+          </Link>
 
           {/* Menu */}
 
-          <nav className="hidden lg:flex items-center gap-8 text-gray-300">
+          <nav className="hidden lg:flex items-center gap-5">
 
-            <Link href="/">Home</Link>
+            <Link
+              href="/"
+              className="px-5 py-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500/20 transition"
+            >
+              Home
+            </Link>
 
-            <Link href="/airdrops">
+            <Link
+              href="/airdrops"
+              className="px-5 py-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition"
+            >
               Airdrops
             </Link>
 
-            <Link href="/testnets">
+            <Link
+              href="/testnets"
+              className="px-5 py-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition"
+            >
               Testnets
             </Link>
 
-            <Link href="/faucets">
-              Faucets
-            </Link>
-
-            <Link href="/guides">
+            <Link
+              href="/guides"
+              className="px-5 py-3 rounded-2xl bg-pink-500/10 border border-pink-500/20 hover:bg-pink-500/20 transition"
+            >
               Guides
             </Link>
 
-            <Link href="/blog">
+            <Link
+              href="/blog"
+              className="px-5 py-3 rounded-2xl bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20 transition"
+            >
               Blog
             </Link>
 
-            <Link href="/tools">
+            <Link
+              href="/tools"
+              className="px-5 py-3 rounded-2xl bg-green-500/10 border border-green-500/20 hover:bg-green-500/20 transition"
+            >
               Tools
             </Link>
 
@@ -106,27 +131,19 @@ export default function Home() {
 
           {/* Right */}
 
-          <div className="flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-4">
 
             <input
               type="text"
               placeholder="Search airdrops..."
-              className="hidden md:flex px-5 py-3 rounded-2xl bg-white/5 border border-white/10 outline-none"
+              className="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 outline-none"
             />
 
             <select className="px-4 py-3 rounded-2xl bg-white/5 border border-white/10">
 
-              <option>
-                🇺🇸 EN
-              </option>
-
-              <option>
-                🇧🇩 BN
-              </option>
-
-              <option>
-                🇮🇳 HI
-              </option>
+              <option>🇺🇸 EN</option>
+              <option>🇧🇩 BN</option>
+              <option>🇮🇳 HI</option>
 
             </select>
 
@@ -150,7 +167,7 @@ export default function Home() {
 
           <h2 className="text-6xl md:text-7xl font-black leading-tight">
 
-            Your Ultimate Guide to
+            Your Ultimate Guide To
 
             <span className="block bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
 
@@ -161,7 +178,7 @@ export default function Home() {
           </h2>
 
           <p className="mt-8 text-xl text-gray-400 leading-relaxed max-w-2xl">
-            Discover verified airdrops, testnet opportunities, nodes and crypto tools — all in one place.
+            Discover verified airdrops, crypto testnets, retroactive rewards and Web3 opportunities before everyone else.
           </p>
 
           {/* Buttons */}
@@ -273,7 +290,7 @@ export default function Home() {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
 
-          {hotAirdrops.map((project, index) => (
+          {projects.map((project, index) => (
 
             <div
               key={index}
@@ -310,11 +327,12 @@ export default function Home() {
 
                 <div className="mt-6">
 
-                  <button className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold hover:scale-105 transition">
-
+                  <Link
+                    href={`/project/${project.id}`}
+                    className="block w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold hover:scale-105 transition text-center"
+                  >
                     Open Guide →
-
-                  </button>
+                  </Link>
 
                 </div>
 
