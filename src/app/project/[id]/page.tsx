@@ -66,7 +66,7 @@ export default function ProjectPage({
 
     <main className="min-h-screen bg-[#020817] text-white overflow-hidden">
 
-      {/* Glow */}
+      {/* Glow Effects */}
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-cyan-500/20 blur-[140px] rounded-full"></div>
 
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-500/20 blur-[140px] rounded-full"></div>
@@ -76,18 +76,27 @@ export default function ProjectPage({
 
         <Link
           href="/"
-          className="inline-flex px-5 py-3 rounded-2xl bg-white/5 border border-white/10 mb-14 hover:bg-white/10 transition"
+          className="inline-flex px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition mb-14"
         >
           ← Back
         </Link>
 
         <div className="grid lg:grid-cols-2 gap-20 items-center">
 
+          {/* Left */}
           <div>
 
-            <span className="inline-flex px-5 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 mb-8">
-              {project.status}
-            </span>
+            <div className="flex flex-wrap gap-4 mb-8">
+
+              <span className="inline-flex px-5 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">
+                {project.status}
+              </span>
+
+              <span className="inline-flex px-5 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300">
+                Potential Airdrop
+              </span>
+
+            </div>
 
             <h1 className="text-6xl md:text-7xl font-black leading-tight">
               {project.title}
@@ -97,6 +106,7 @@ export default function ProjectPage({
               {project.description}
             </p>
 
+            {/* Tags */}
             <div className="flex flex-wrap gap-4 mt-8">
 
               {project.tags?.map((tag: string) => (
@@ -105,13 +115,14 @@ export default function ProjectPage({
                   key={tag}
                   className="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 text-gray-300"
                 >
-                  {tag}
+                  #{tag}
                 </span>
 
               ))}
 
             </div>
 
+            {/* Buttons */}
             <div className="flex flex-wrap gap-5 mt-10">
 
               <a
@@ -130,10 +141,32 @@ export default function ProjectPage({
                 Twitter / X
               </a>
 
+              <a
+                href="https://t.me/CryptoDropScoutt"
+                target="_blank"
+                className="px-8 py-5 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500/20 transition"
+              >
+                Telegram
+              </a>
+
+            </div>
+
+            {/* Reward Box */}
+            <div className="mt-12 bg-white/5 border border-white/10 rounded-[32px] p-8">
+
+              <h3 className="text-2xl font-black mb-4">
+                Estimated Reward
+              </h3>
+
+              <p className="text-gray-400 text-lg leading-relaxed">
+                This project has strong community traction and potential future token rewards for early users.
+              </p>
+
             </div>
 
           </div>
 
+          {/* Right */}
           <div>
 
             <img
@@ -148,25 +181,25 @@ export default function ProjectPage({
 
       </section>
 
-      {/* Guide */}
+      {/* Guide Section */}
       <section className="relative z-10 max-w-5xl mx-auto px-6 md:px-16 pb-24">
 
         <div className="bg-white/5 border border-white/10 rounded-[36px] p-10 md:p-14 backdrop-blur-xl">
 
-          <div className="flex items-center gap-4 mb-10">
+          <div className="flex items-center gap-5 mb-12">
 
-            <div className="w-14 h-14 rounded-full bg-cyan-500/20 flex items-center justify-center text-2xl">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center text-3xl">
               🚀
             </div>
 
             <div>
 
-              <h2 className="text-4xl font-black">
-                Participation Guide
+              <h2 className="text-5xl font-black">
+                Full Participation Guide
               </h2>
 
-              <p className="text-gray-400 mt-2">
-                Follow all steps carefully to maximize rewards.
+              <p className="text-gray-400 mt-3 text-lg">
+                Follow every step carefully to maximize eligibility.
               </p>
 
             </div>
@@ -185,7 +218,7 @@ export default function ProjectPage({
                   className="flex gap-5 items-start"
                 >
 
-                  <div className="min-w-[50px] h-[50px] rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center font-black text-lg">
+                  <div className="min-w-[55px] h-[55px] rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center font-black text-xl">
                     {index + 1}
                   </div>
 
@@ -202,6 +235,47 @@ export default function ProjectPage({
         </div>
 
       </section>
+
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-white/10">
+
+        <div className="max-w-7xl mx-auto px-6 md:px-16 py-14 flex flex-col md:flex-row items-center justify-between gap-8">
+
+          <div>
+
+            <h2 className="text-4xl font-black bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
+              CryptoDropScout
+            </h2>
+
+            <p className="text-gray-400 mt-4">
+              Stay Informed • Stay Ahead • Stay Connected
+            </p>
+
+          </div>
+
+          <div className="flex gap-4">
+
+            <a
+              href="https://x.com/cryptodrpscout"
+              target="_blank"
+              className="px-6 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
+            >
+              Twitter
+            </a>
+
+            <a
+              href="https://t.me/CryptoDropScoutt"
+              target="_blank"
+              className="px-6 py-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500/20 transition"
+            >
+              Telegram
+            </a>
+
+          </div>
+
+        </div>
+
+      </footer>
 
     </main>
 
