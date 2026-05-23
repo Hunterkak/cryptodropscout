@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { use } from "react";
 
 import { db } from "../../../lib/firebase";
 
@@ -10,11 +10,18 @@ import {
   getDoc,
 } from "firebase/firestore";
 
+import {
+  useEffect,
+  useState,
+} from "react";
+
 export default function ProjectPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+
+  const resolvedParams = use(params);
 
   const [project, setProject] = useState<any>(null);
 
@@ -22,28 +29,20 @@ export default function ProjectPage({
 
     const fetchProject = async () => {
 
-      try {
+      const docRef = doc(
+        db,
+        "projects",
+        resolvedParams.id
+      );
 
-        const docRef = doc(
-          db,
-          "projects",
-          params.id
-        );
+      const docSnap = await getDoc(docRef);
 
-        const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
 
-        if (docSnap.exists()) {
-
-          setProject({
-            id: docSnap.id,
-            ...docSnap.data(),
-          });
-
-        }
-
-      } catch (error) {
-
-        console.log(error);
+        setProject({
+          id: docSnap.id,
+          ...docSnap.data(),
+        });
 
       }
 
@@ -51,7 +50,7 @@ export default function ProjectPage({
 
     fetchProject();
 
-  }, [params.id]);
+  }, [resolvedParams.id]);
 
   if (!project) {
 
@@ -65,78 +64,71 @@ export default function ProjectPage({
 
   return (
 
-    <main className="min-h-screen bg-[#020817] text-white">
+    <main className="min-h-screen bg-[#020817] text-white px-6 py-20">
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
+      <div className="max-w-6xl mx-auto">
 
-        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-cyan-500/20 blur-[120px] rounded-full"></div>
+        <Link
+          href="/"
+          className="inline-flex px-5 py-3 rounded-2xl bg-white/5 border border-white/10 mb-12"
+        >
+          ← Back
+        </Link>
 
-        <div className="max-w-7xl mx-auto px-6 md:px-16 py-24 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
 
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition mb-12"
-          >
-            ← Back
-          </Link>
+          <div>
 
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <span className="inline-flex px-5 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 mb-8">
+              {project.status}
+            </span>
 
-            <div>
+            <h1 className="text-6xl font-black">
+              {project.title}
+            </h1>
 
-              <span className="inline-flex px-5 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 mb-8">
-                {project.status}
-              </span>
+            <p className="mt-8 text-xl text-gray-400 leading-relaxed">
+              {project.description}
+            </p>
 
-              <h1 className="text-6xl md:text-7xl font-black leading-tight">
-                {project.title}
-              </h1>
+            <div className="flex flex-wrap gap-4 mt-8">
 
-              <p className="mt-8 text-xl text-gray-400 leading-relaxed">
-                {project.description}
-              </p>
+              {project.tags?.map((tag: string) => (
 
-              <div className="flex flex-wrap gap-4 mt-8">
+                <span
+                  key={tag}
+                  className="px-5 py-3 rounded-2xl bg-white/5 border border-white/10"
+                >
+                  {tag}
+                </span>
 
-                {project.tags?.map((tag: string) => (
-
-                  <span
-                    key={tag}
-                    className="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 text-gray-300"
-                  >
-                    {tag}
-                  </span>
-
-                ))}
-
-              </div>
-
-              <a
-                href={project.link}
-                target="_blank"
-                className="inline-flex items-center gap-3 mt-10 px-8 py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-lg font-bold hover:scale-105 transition"
-              >
-                Open Project →
-              </a>
+              ))}
 
             </div>
 
-            <div>
+            <a
+              href={project.link}
+              target="_blank"
+              className="inline-flex items-center gap-3 mt-10 px-8 py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-lg font-bold"
+            >
+              Open Project →
+            </a>
 
-              <img
-                src={project.image}
-                alt={project.title}
-                className="w-full rounded-[32px] border border-white/10 shadow-2xl"
-              />
+          </div>
 
-            </div>
+          <div>
+
+            <img
+              src={project.image}
+              alt={project.title}
+              className="w-full rounded-[32px]"
+            />
 
           </div>
 
         </div>
 
-      </section>
+      </div>
 
     </main>
 
