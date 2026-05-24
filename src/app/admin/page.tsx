@@ -11,7 +11,18 @@ import {
   getAllBlogs,
 } from '@/lib/projects';
 
+const ADMIN_PASSWORD = 'cryptoscout2025';
+
 export default function AdminPage() {
+
+  const [auth, setAuth] =
+    useState(false);
+
+  const [pass, setPass] =
+    useState('');
+
+  const [authError, setAuthError] =
+    useState(false);
 
   const [loading, setLoading] =
     useState(false);
@@ -425,6 +436,106 @@ export default function AdminPage() {
       );
 
     }
+
+  }
+
+  // PASSWORD SCREEN
+
+  if (!auth) {
+
+    return (
+
+      <div className="min-h-screen bg-[#050816] flex items-center justify-center">
+
+        <div className="bg-white/5 border border-white/10 rounded-[32px] p-10 w-full max-w-sm">
+
+          <h2 className="text-3xl font-black mb-2 text-center bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+
+            🔐 Admin Access
+
+          </h2>
+
+          <p className="text-gray-500 text-sm text-center mb-8">
+
+            CryptoDropScout
+
+          </p>
+
+          <input
+            type="password"
+            placeholder="Enter password..."
+            value={pass}
+            onChange={(e) => {
+
+              setPass(
+                e.target.value
+              );
+
+              setAuthError(false);
+
+            }}
+            onKeyDown={(e) => {
+
+              if (e.key === 'Enter') {
+
+                if (
+                  pass ===
+                  ADMIN_PASSWORD
+                ) {
+
+                  setAuth(true);
+
+                } else {
+
+                  setAuthError(true);
+
+                }
+
+              }
+
+            }}
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white mb-3 focus:outline-none focus:border-purple-500"
+          />
+
+          {authError && (
+
+            <p className="text-red-400 text-xs mb-3">
+
+              ❌ Wrong password!
+
+            </p>
+
+          )}
+
+          <button
+            onClick={() => {
+
+              if (
+                pass ===
+                ADMIN_PASSWORD
+              ) {
+
+                setAuth(true);
+
+              } else {
+
+                setAuthError(true);
+
+              }
+
+            }}
+            className="w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl font-black text-lg hover:opacity-90 transition"
+          >
+
+            Enter →
+
+          </button>
+
+        </div>
+
+      </div>
+
+    );
 
   }
 
