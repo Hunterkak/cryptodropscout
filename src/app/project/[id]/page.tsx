@@ -3,14 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+
 import { getProjectBySlug } from '@/lib/projects';
-import { Project } from '@/lib/types';
 
 export default function ProjectPage() {
   const params = useParams();
   const id = params?.id as string;
 
-  const [project, setProject] = useState<Project | null>(null);
+  const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export default function ProjectPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050816] text-white">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-cyan-400"></div>
+        Loading Guide...
       </div>
     );
   }
@@ -41,11 +41,13 @@ export default function ProjectPage() {
   if (!project) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#050816] text-white">
-        <h1 className="text-4xl font-bold mb-4">Project Not Found</h1>
+        <h1 className="text-4xl font-bold mb-4">
+          Project Not Found
+        </h1>
 
         <Link
           href="/"
-          className="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-600 transition"
+          className="px-6 py-3 rounded-xl bg-cyan-500"
         >
           Go Home
         </Link>
@@ -59,7 +61,7 @@ export default function ProjectPage() {
 
         <Link
           href="/"
-          className="text-cyan-400 hover:text-cyan-300 mb-6 inline-block"
+          className="text-cyan-400 mb-6 inline-block"
         >
           ← Back Home
         </Link>
@@ -104,7 +106,7 @@ export default function ProjectPage() {
                 <a
                   href={project.websiteUrl}
                   target="_blank"
-                  className="px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-600 transition"
+                  className="px-6 py-3 rounded-2xl bg-cyan-500"
                 >
                   Website
                 </a>
@@ -114,7 +116,7 @@ export default function ProjectPage() {
                 <a
                   href={project.twitterUrl}
                   target="_blank"
-                  className="px-6 py-3 rounded-2xl bg-purple-500 hover:bg-purple-600 transition"
+                  className="px-6 py-3 rounded-2xl bg-purple-500"
                 >
                   Twitter / X
                 </a>
@@ -124,7 +126,7 @@ export default function ProjectPage() {
                 <a
                   href={project.youtubeUrl}
                   target="_blank"
-                  className="px-6 py-3 rounded-2xl bg-red-500 hover:bg-red-600 transition"
+                  className="px-6 py-3 rounded-2xl bg-red-500"
                 >
                   YouTube Guide
                 </a>
@@ -139,11 +141,12 @@ export default function ProjectPage() {
 
               <div className="space-y-5">
 
-                {project.steps?.map((step, index) => (
+                {project.steps?.map((step: any, index: number) => (
                   <div
                     key={step.id}
                     className="border border-white/10 rounded-2xl p-5 bg-white/5"
                   >
+
                     <div className="flex items-center gap-3 mb-3">
 
                       <div className="w-8 h-8 rounded-full bg-cyan-500 flex items-center justify-center font-bold">
