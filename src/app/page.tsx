@@ -52,9 +52,6 @@ export default function HomePage() {
       const status =
         project.status?.toLowerCase();
 
-      // ACTIVE TAB
-      // SHOW EVERYTHING EXCEPT ENDED
-
       if (
         activeFilter === 'Active'
       ) {
@@ -65,9 +62,6 @@ export default function HomePage() {
 
       }
 
-      // ALPHA TAB
-      // SHOW ONLY ALPHA
-
       if (
         activeFilter === 'Alpha'
       ) {
@@ -77,9 +71,6 @@ export default function HomePage() {
         );
 
       }
-
-      // ENDED TAB
-      // SHOW ONLY ENDED
 
       if (
         activeFilter === 'Ended'
@@ -94,6 +85,18 @@ export default function HomePage() {
       return true;
 
     });
+
+  // FEATURED PROJECTS
+
+  const featuredProjects =
+    projects.filter(
+      (project) =>
+        project.featured ===
+          true &&
+        project.status
+          ?.toLowerCase() !==
+          'ended'
+    );
 
   return (
 
@@ -200,11 +203,102 @@ export default function HomePage() {
 
       </section>
 
+      {/* FEATURED PROJECTS */}
+
+      {featuredProjects.length > 0 && (
+
+        <section className="max-w-7xl mx-auto px-6 py-10">
+
+          <div className="flex items-center justify-between mb-12">
+
+            <h2 className="text-5xl font-black">
+
+              ⭐ Featured Projects
+
+            </h2>
+
+          </div>
+
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+            {featuredProjects.map(
+              (project) => (
+
+                <div
+                  key={project.id}
+                  className="relative overflow-hidden rounded-[30px] border border-yellow-500/20 bg-gradient-to-b from-[#151b2f] to-[#0b1020] shadow-[0_0_40px_rgba(255,215,0,0.08)]"
+                >
+
+                  <div className="absolute top-4 right-4 z-20 px-4 py-2 rounded-full bg-yellow-500 text-black text-xs font-black">
+
+                    FEATURED
+
+                  </div>
+
+                  <img
+                    src={
+                      project.image ||
+                      'https://picsum.photos/600/400'
+                    }
+                    alt={project.title}
+                    className="w-full h-48 object-cover"
+                  />
+
+                  <div className="p-5">
+
+                    <div className="flex items-center justify-between mb-4">
+
+                      <span className="px-3 py-1 rounded-full border border-cyan-500/20 bg-cyan-500/10 text-cyan-300 text-xs">
+
+                        {project.status}
+
+                      </span>
+
+                      <span className="text-green-400 font-bold text-lg">
+
+                        {project.reward}
+
+                      </span>
+
+                    </div>
+
+                    <h3 className="text-[28px] font-black">
+
+                      {project.title}
+
+                    </h3>
+
+                    <p className="text-gray-400 mt-4 text-base">
+
+                      Difficulty: {project.difficulty}
+
+                    </p>
+
+                    <Link
+                      href={`/project/${project.slug}`}
+                      className="mt-5 block w-full text-center py-3 rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-black hover:scale-[1.02] transition"
+                    >
+                      Explore →
+                    </Link>
+
+                  </div>
+
+                </div>
+
+              )
+            )}
+
+          </div>
+
+        </section>
+
+      )}
+
       {/* LIVE PROJECTS */}
 
-      <section className="max-w-7xl mx-auto px-6 py-28">
+      <section className="max-w-7xl mx-auto px-6 py-22">
 
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 mb-16">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 mb-12">
 
           <h2 className="text-6xl font-black flex items-center gap-5">
             🔥 Live Projects
@@ -264,14 +358,14 @@ export default function HomePage() {
 
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 
           {filteredProjects.map(
             (project) => (
 
               <div
                 key={project.id}
-                className="rounded-[32px] overflow-hidden border border-white/10 bg-gradient-to-b from-[#111827] to-[#0b1020] hover:scale-[1.02] transition duration-300 shadow-2xl"
+                className="rounded-[30px] overflow-hidden border border-white/10 bg-gradient-to-b from-[#111827] to-[#0b1020] hover:scale-[1.02] transition duration-300 shadow-2xl"
               >
 
                 <img
@@ -280,20 +374,20 @@ export default function HomePage() {
                     'https://picsum.photos/600/400'
                   }
                   alt={project.title}
-                  className="w-full h-72 object-cover"
+                  className="w-full h-52 object-cover"
                 />
 
-                <div className="p-8">
+                <div className="p-5">
 
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center justify-between mb-4">
 
-                    <span className="px-4 py-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 text-cyan-300 text-sm">
+                    <span className="px-3 py-1 rounded-full border border-cyan-500/20 bg-cyan-500/10 text-cyan-300 text-xs">
 
                       {project.status}
 
                     </span>
 
-                    <span className="text-green-400 font-bold text-2xl">
+                    <span className="text-green-400 font-bold text-lg">
 
                       {project.reward}
 
@@ -301,13 +395,13 @@ export default function HomePage() {
 
                   </div>
 
-                  <h3 className="text-4xl font-black">
+                  <h3 className="text-[28px] font-black">
 
                     {project.title}
 
                   </h3>
 
-                  <p className="text-gray-400 mt-6 text-xl">
+                  <p className="text-gray-400 mt-4 text-base">
 
                     Difficulty: {project.difficulty}
 
@@ -315,7 +409,7 @@ export default function HomePage() {
 
                   <Link
                     href={`/project/${project.slug}`}
-                    className="mt-8 block w-full text-center py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-black text-xl hover:scale-[1.02] transition"
+                    className="mt-5 block w-full text-center py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-black hover:scale-[1.02] transition"
                   >
                     Open Guide →
                   </Link>

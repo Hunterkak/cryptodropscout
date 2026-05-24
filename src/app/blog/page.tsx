@@ -1,179 +1,258 @@
-"use client";
+'use client';
 
-import Link from "next/link";
+import Link from 'next/link';
+
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+
+import {
+  getAllBlogs,
+} from '@/lib/projects';
 
 export default function BlogPage() {
 
-  const posts = [
+  const [search, setSearch] =
+    useState('');
 
-    {
-      title: "Top 10 Upcoming Crypto Airdrops",
-      category: "Airdrop",
-      date: "May 2026",
-      image:
-        "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1200&auto=format&fit=crop",
-    },
+  const [category, setCategory] =
+    useState('All');
 
-    {
-      title: "Best Testnets To Farm Early",
-      category: "Testnet",
-      date: "May 2026",
-      image:
-        "https://images.unsplash.com/photo-1642104704074-907c0698cbd9?q=80&w=1200&auto=format&fit=crop",
-    },
+  const [posts, setPosts] =
+    useState<any[]>([]);
 
-    {
-      title: "How To Find Legit Airdrops",
-      category: "Guide",
-      date: "May 2026",
-      image:
-        "https://images.unsplash.com/photo-1621761191319-c6fb62004040?q=80&w=1200&auto=format&fit=crop",
-    },
+  const [loading, setLoading] =
+    useState(true);
 
-    {
-      title: "Future Of Retroactive Rewards",
-      category: "Research",
-      date: "May 2026",
-      image:
-        "https://images.unsplash.com/photo-1621504450181-5d356f61d307?q=80&w=1200&auto=format&fit=crop",
-    },
+  useEffect(() => {
 
-    {
-      title: "Best Wallets For Airdrop Farming",
-      category: "Wallet",
-      date: "May 2026",
-      image:
-        "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1200&auto=format&fit=crop",
-    },
+    async function load() {
 
-    {
-      title: "CryptoDropScout Weekly Alpha",
-      category: "News",
-      date: "May 2026",
-      image:
-        "https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=1200&auto=format&fit=crop",
-    },
+      try {
 
-  ];
+        const data =
+          await getAllBlogs();
+
+        setPosts(data);
+
+      } catch (error) {
+
+        console.error(error);
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    }
+
+    load();
+
+  }, []);
+
+  const filteredPosts =
+    useMemo(() => {
+
+      return posts.filter(
+        (post) => {
+
+          const matchesSearch =
+            post.title
+              ?.toLowerCase()
+              .includes(
+                search.toLowerCase()
+              );
+
+          const matchesCategory =
+            category ===
+              'All' ||
+            post.category ===
+              category;
+
+          return (
+            matchesSearch &&
+            matchesCategory
+          );
+
+        }
+      );
+
+    }, [
+      posts,
+      search,
+      category,
+    ]);
+
+  const featuredPost =
+    posts.find(
+      (p) => p.featured
+    );
 
   return (
 
-    <main className="min-h-screen bg-[#050816] text-white overflow-hidden">
+    <main className="min-h-screen bg-[#050816] text-white overflow-hidden relative">
 
-      {/* Glow */}
+      {/* GLOW */}
 
-      <div className="fixed top-0 left-0 w-[500px] h-[500px] bg-cyan-500/10 blur-[140px] rounded-full"></div>
+      <div className="fixed top-[-150px] left-[-150px] w-[500px] h-[500px] bg-cyan-500/10 blur-[140px] rounded-full"></div>
 
-      <div className="fixed bottom-0 right-0 w-[500px] h-[500px] bg-purple-500/10 blur-[140px] rounded-full"></div>
+      <div className="fixed bottom-[-150px] right-[-150px] w-[500px] h-[500px] bg-purple-500/10 blur-[140px] rounded-full"></div>
 
-      {/* Navbar */}
+      {/* HERO */}
 
-      <header className="relative z-20 border-b border-white/10 backdrop-blur-xl">
-
-        <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-
-          <Link
-            href="/"
-            className="flex items-center gap-3"
-          >
-
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-cyan-400 to-purple-500 flex items-center justify-center font-black">
-              C
-            </div>
-
-            <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-              CryptoDropScout
-            </h1>
-
-          </Link>
-
-          <div className="flex items-center gap-4">
-
-            <Link
-              href="/"
-              className="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
-            >
-              Home
-            </Link>
-
-            <Link
-              href="/airdrops"
-              className="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
-            >
-              Airdrops
-            </Link>
-
-            <Link
-              href="/guides"
-              className="px-5 py-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500/20 transition"
-            >
-              Guides
-            </Link>
-
-          </div>
-
-        </div>
-
-      </header>
-
-      {/* Hero */}
-
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-20">
+      <section className="relative z-10 max-w-7xl mx-auto px-6 pt-24 pb-20">
 
         <div className="text-center">
 
-          <div className="inline-flex px-5 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 mb-8">
-            📰 Crypto Insights & Alpha
+          <div className="inline-flex px-5 py-3 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 mb-8">
+
+            📰 Web3 News & Alpha
+
           </div>
 
-          <h2 className="text-6xl md:text-7xl font-black leading-tight">
+          <h1 className="text-6xl md:text-8xl font-black leading-tight">
 
-            Latest Web3
+            Crypto Insights
 
-            <span className="block bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-cyan-300 via-white to-purple-400 text-transparent bg-clip-text">
 
-              News & Articles
+              & Articles
 
             </span>
 
-          </h2>
+          </h1>
 
-          <p className="mt-8 text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto">
-            Stay updated with crypto trends, airdrop insights and early alpha opportunities.
+          <p className="mt-10 text-xl text-gray-400 leading-10 max-w-3xl mx-auto">
+
+            Explore premium crypto
+            guides, airdrop research,
+            testnet opportunities and
+            Web3 alpha updates.
+
           </p>
 
         </div>
 
       </section>
 
-      {/* Search */}
+      {/* FEATURED */}
 
-      <section className="relative z-10 max-w-7xl mx-auto px-6 pb-16">
+      {featuredPost && (
+
+        <section className="relative z-10 max-w-7xl mx-auto px-6 pb-20">
+
+          <div className="relative overflow-hidden rounded-[40px] border border-yellow-500/20 bg-gradient-to-b from-[#151b2f] to-[#0b1020]">
+
+            <img
+              src={
+                featuredPost.image
+              }
+              alt={
+                featuredPost.title
+              }
+              className="w-full h-[500px] object-cover"
+            />
+
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050816] via-[#050816]/20 to-transparent"></div>
+
+            <div className="absolute bottom-0 left-0 w-full p-10">
+
+              <div className="inline-flex px-5 py-2 rounded-full bg-yellow-500 text-black text-sm font-black mb-6">
+
+                FEATURED ARTICLE
+
+              </div>
+
+              <h2 className="text-5xl lg:text-7xl font-black leading-tight max-w-5xl">
+
+                {
+                  featuredPost.title
+                }
+
+              </h2>
+
+              <p className="text-gray-300 text-xl mt-8 max-w-3xl leading-10">
+
+                {
+                  featuredPost.description
+                }
+
+              </p>
+
+              <Link
+                href={`/blog/${featuredPost.slug}`}
+                className="inline-block mt-10 px-10 py-5 rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-black hover:scale-[1.03] transition"
+              >
+
+                Read Featured →
+
+              </Link>
+
+            </div>
+
+          </div>
+
+        </section>
+
+      )}
+
+      {/* SEARCH */}
+
+      <section className="relative z-10 max-w-7xl mx-auto px-6 pb-14">
 
         <div className="grid lg:grid-cols-2 gap-6">
 
           <input
             type="text"
             placeholder="Search articles..."
-            className="px-6 py-5 rounded-2xl bg-white/5 border border-white/10 outline-none"
+            value={search}
+            onChange={(e) =>
+              setSearch(
+                e.target.value
+              )
+            }
+            className="px-6 py-5 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-cyan-500/40"
           />
 
-          <select className="px-6 py-5 rounded-2xl bg-[#111827] border border-white/10 text-white outline-none">
+          <select
+            value={category}
+            onChange={(e) =>
+              setCategory(
+                e.target.value
+              )
+            }
+            className="px-6 py-5 rounded-2xl bg-[#111827] border border-white/10 text-white outline-none"
+          >
 
-            <option className="bg-[#111827] text-white">
+            <option value="All">
               All Categories
             </option>
 
-            <option className="bg-[#111827] text-white">
+            <option value="Airdrop">
               Airdrop
             </option>
 
-            <option className="bg-[#111827] text-white">
+            <option value="Testnet">
               Testnet
             </option>
 
-            <option className="bg-[#111827] text-white">
+            <option value="Guide">
+              Guide
+            </option>
+
+            <option value="Research">
               Research
+            </option>
+
+            <option value="Wallet">
+              Wallet
+            </option>
+
+            <option value="News">
+              News
             </option>
 
           </select>
@@ -182,62 +261,161 @@ export default function BlogPage() {
 
       </section>
 
-      {/* Blog Cards */}
+      {/* LOADING */}
 
-      <section className="relative z-10 max-w-7xl mx-auto px-6 pb-24">
+      {loading && (
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <section className="relative z-10 max-w-7xl mx-auto px-6 pb-24">
 
-          {posts.map((post, index) => (
+          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-8">
 
-            <div
-              key={index}
-              className="rounded-[32px] overflow-hidden bg-white/5 border border-white/10 hover:border-cyan-500/30 hover:scale-[1.02] transition"
-            >
+            {[...Array(6)].map(
+              (_, i) => (
 
-              <img
-                src={post.image}
-                alt={post.title}
-                className="w-full h-[240px] object-cover"
-              />
+                <div
+                  key={i}
+                  className="h-[420px] rounded-[32px] bg-white/5 animate-pulse border border-white/10"
+                />
 
-              <div className="p-6">
+              )
+            )}
 
-                <div className="flex items-center justify-between mb-5">
+          </div>
 
-                  <span className="px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-sm">
-                    {post.category}
-                  </span>
+        </section>
 
-                  <span className="text-gray-400 text-sm">
-                    {post.date}
-                  </span>
+      )}
 
-                </div>
+      {/* ARTICLES */}
 
-                <h3 className="text-2xl font-bold">
-                  {post.title}
-                </h3>
+      {!loading && (
 
-                <div className="mt-6">
+        <section className="relative z-10 max-w-7xl mx-auto px-6 pb-24">
 
-                  <button className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold hover:scale-105 transition">
+          {filteredPosts.length ===
+            0 && (
 
-                    Read Article →
+            <div className="text-center py-24">
 
-                  </button>
+              <h2 className="text-5xl font-black mb-6">
 
-                </div>
+                No Articles Yet
 
-              </div>
+              </h2>
+
+              <p className="text-gray-400 text-xl">
+
+                Publish blogs from
+                admin panel 😄
+
+              </p>
 
             </div>
 
-          ))}
+          )}
+
+          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-8">
+
+            {filteredPosts.map(
+              (
+                post,
+                index
+              ) => (
+
+                <div
+                  key={index}
+                  className="group rounded-[32px] overflow-hidden bg-gradient-to-b from-[#111827] to-[#0b1020] border border-white/10 hover:border-cyan-500/30 hover:scale-[1.02] transition-all duration-300 shadow-2xl"
+                >
+
+                  <div className="overflow-hidden">
+
+                    <img
+                      src={
+                        post.image ||
+                        'https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=1200&auto=format&fit=crop'
+                      }
+                      alt={
+                        post.title
+                      }
+                      className="w-full h-[240px] object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+
+                  </div>
+
+                  <div className="p-6">
+
+                    <div className="flex items-center justify-between mb-5">
+
+                      <span className="px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-sm">
+
+                        {
+                          post.category ||
+                          'Blog'
+                        }
+
+                      </span>
+
+                      <span className="text-gray-400 text-sm">
+
+                        {
+                          post.date ||
+                          'May 2026'
+                        }
+
+                      </span>
+
+                    </div>
+
+                    <h3 className="text-3xl font-black leading-tight">
+
+                      {
+                        post.title
+                      }
+
+                    </h3>
+
+                    <p className="mt-5 text-gray-400 leading-8 line-clamp-3">
+
+                      {
+                        post.description
+                      }
+
+                    </p>
+
+                    <Link
+                      href={`/blog/${post.slug}`}
+                      className="block mt-8 w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-black hover:scale-[1.02] transition text-center"
+                    >
+
+                      Read Article →
+
+                    </Link>
+
+                  </div>
+
+                </div>
+
+              )
+            )}
+
+          </div>
+
+        </section>
+
+      )}
+
+      {/* FOOTER */}
+
+      <footer className="border-t border-white/10 bg-[#070b18]">
+
+        <div className="max-w-7xl mx-auto px-6 py-10 text-center text-gray-500">
+
+          © 2026 CryptoDropScout.
+          All Rights Reserved.
 
         </div>
 
-      </section>
+      </footer>
 
     </main>
 
