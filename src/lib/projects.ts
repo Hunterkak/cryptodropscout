@@ -7,6 +7,7 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  getDoc,
   query,
   where,
 } from 'firebase/firestore';
@@ -31,6 +32,23 @@ export async function getProjectBySlug(slug: string) {
     id: d.id,
     ...d.data(),
   };
+
+}
+
+// GET PROJECT BY ID
+export async function getProjectById(id: string) {
+
+  const snap = await getDoc(
+    doc(db, COL, id)
+  );
+
+  if (!snap.exists()) return null;
+
+  return {
+    id: snap.id,
+    ...snap.data(),
+  };
+
 }
 
 // GET ALL PROJECTS
@@ -44,6 +62,7 @@ export async function getAllProjects() {
     id: d.id,
     ...d.data(),
   }));
+
 }
 
 // GET PROJECTS BY CATEGORY
@@ -60,8 +79,11 @@ export async function getProjectsByCategory(category: string) {
     }))
     .filter(
       (p: any) =>
-        p.category?.toLowerCase() === category.toLowerCase()
+        p.category
+          ?.toLowerCase() ===
+        category.toLowerCase()
     );
+
 }
 
 // ADD PROJECT
@@ -73,6 +95,7 @@ export async function addProject(data: any) {
   );
 
   return ref.id;
+
 }
 
 // UPDATE PROJECT
@@ -85,6 +108,7 @@ export async function updateProject(
     doc(db, COL, id),
     data
   );
+
 }
 
 // DELETE PROJECT
@@ -93,4 +117,5 @@ export async function deleteProject(id: string) {
   await deleteDoc(
     doc(db, COL, id)
   );
+
 }

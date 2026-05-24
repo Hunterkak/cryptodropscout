@@ -90,6 +90,13 @@ export default function BlogPage() {
           <div className="flex items-center gap-4">
 
             <Link
+              href="/"
+              className="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
+            >
+              Home
+            </Link>
+
+            <Link
               href="/airdrops"
               className="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
             >
@@ -151,21 +158,21 @@ export default function BlogPage() {
             className="px-6 py-5 rounded-2xl bg-white/5 border border-white/10 outline-none"
           />
 
-          <select className="px-6 py-5 rounded-2xl bg-white/5 border border-white/10">
+          <select className="px-6 py-5 rounded-2xl bg-[#111827] border border-white/10 text-white outline-none">
 
-            <option>
+            <option className="bg-[#111827] text-white">
               All Categories
             </option>
 
-            <option>
+            <option className="bg-[#111827] text-white">
               Airdrop
             </option>
 
-            <option>
+            <option className="bg-[#111827] text-white">
               Testnet
             </option>
 
-            <option>
+            <option className="bg-[#111827] text-white">
               Research
             </option>
 

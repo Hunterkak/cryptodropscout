@@ -4,7 +4,9 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
 
-  metadataBase: new URL('https://cryptodropscout.vercel.app'),
+  metadataBase: new URL(
+    'https://cryptodropscout.vercel.app'
+  ),
 
   title: 'CryptoDropScout',
 
@@ -48,7 +50,7 @@ export default function RootLayout({
 
     <html lang="en">
 
-      <body>
+      <body className="bg-[#050816] text-white overflow-x-hidden">
 
         {children}
 
