@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import Link from "next/link";
 
@@ -8,7 +8,7 @@ export default function Home() {
 
     {
       id: "monad-testnet",
-      name: "Monad",
+      title: "Monad",
       status: "Potential",
       difficulty: "Easy",
       reward: "$500+",
@@ -18,7 +18,7 @@ export default function Home() {
 
     {
       id: "layerzero",
-      name: "LayerZero",
+      title: "LayerZero",
       status: "Hot",
       difficulty: "Medium",
       reward: "$1200+",
@@ -28,7 +28,7 @@ export default function Home() {
 
     {
       id: "scroll",
-      name: "Scroll",
+      title: "Scroll",
       status: "Active",
       difficulty: "Easy",
       reward: "$300+",
@@ -38,7 +38,7 @@ export default function Home() {
 
     {
       id: "base",
-      name: "Base",
+      title: "Base",
       status: "Live",
       difficulty: "Easy",
       reward: "$700+",
@@ -64,8 +64,6 @@ export default function Home() {
 
         <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
 
-          {/* Logo */}
-
           <Link
             href="/"
             className="flex items-center gap-3"
@@ -80,8 +78,6 @@ export default function Home() {
             </h1>
 
           </Link>
-
-          {/* Menu */}
 
           <nav className="hidden lg:flex items-center gap-5">
 
@@ -113,41 +109,7 @@ export default function Home() {
               Guides
             </Link>
 
-            <Link
-              href="/blog"
-              className="px-5 py-3 rounded-2xl bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20 transition"
-            >
-              Blog
-            </Link>
-
-            <Link
-              href="/tools"
-              className="px-5 py-3 rounded-2xl bg-green-500/10 border border-green-500/20 hover:bg-green-500/20 transition"
-            >
-              Tools
-            </Link>
-
           </nav>
-
-          {/* Right */}
-
-          <div className="hidden lg:flex items-center gap-4">
-
-            <input
-              type="text"
-              placeholder="Search airdrops..."
-              className="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 outline-none"
-            />
-
-            <select className="px-4 py-3 rounded-2xl bg-white/5 border border-white/10">
-
-              <option>🇺🇸 EN</option>
-              <option>🇧🇩 BN</option>
-              <option>🇮🇳 HI</option>
-
-            </select>
-
-          </div>
 
         </div>
 
@@ -156,8 +118,6 @@ export default function Home() {
       {/* Hero */}
 
       <section className="relative z-10 max-w-7xl mx-auto px-6 py-24 grid lg:grid-cols-2 gap-16 items-center">
-
-        {/* Left */}
 
         <div>
 
@@ -178,10 +138,8 @@ export default function Home() {
           </h2>
 
           <p className="mt-8 text-xl text-gray-400 leading-relaxed max-w-2xl">
-            Discover verified airdrops, crypto testnets, retroactive rewards and Web3 opportunities before everyone else.
+            Discover verified airdrops, crypto testnets and Web3 opportunities before everyone else.
           </p>
-
-          {/* Buttons */}
 
           <div className="mt-10 flex flex-wrap gap-5">
 
@@ -203,8 +161,6 @@ export default function Home() {
 
         </div>
 
-        {/* Right */}
-
         <div className="relative">
 
           <div className="absolute inset-0 bg-purple-500/20 blur-[120px] rounded-full"></div>
@@ -214,56 +170,6 @@ export default function Home() {
             alt="Crypto"
             className="relative z-10 rounded-[40px] border border-white/10 shadow-2xl"
           />
-
-        </div>
-
-      </section>
-
-      {/* Stats */}
-
-      <section className="relative z-10 max-w-7xl mx-auto px-6 pb-20">
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-
-          {[
-            {
-              number: "120+",
-              label: "Active Airdrops",
-            },
-
-            {
-              number: "80+",
-              label: "Live Testnets",
-            },
-
-            {
-              number: "50+",
-              label: "Faucets",
-            },
-
-            {
-              number: "10K+",
-              label: "Happy Users",
-            },
-
-          ].map((item, index) => (
-
-            <div
-              key={index}
-              className="p-8 rounded-[32px] bg-white/5 border border-white/10 backdrop-blur-xl"
-            >
-
-              <h3 className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-                {item.number}
-              </h3>
-
-              <p className="mt-3 text-gray-400">
-                {item.label}
-              </p>
-
-            </div>
-
-          ))}
 
         </div>
 
@@ -299,7 +205,7 @@ export default function Home() {
 
               <img
                 src={project.image}
-                alt={project.name}
+                alt={project.title}
                 className="w-full h-[220px] object-cover"
               />
 
@@ -318,7 +224,7 @@ export default function Home() {
                 </div>
 
                 <h3 className="text-2xl font-bold">
-                  {project.name}
+                  {project.title}
                 </h3>
 
                 <p className="text-gray-400 mt-4">
@@ -345,56 +251,6 @@ export default function Home() {
         </div>
 
       </section>
-
-      {/* Footer */}
-
-      <footer className="relative z-10 border-t border-white/10">
-
-        <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col lg:flex-row items-center justify-between gap-8">
-
-          <div>
-
-            <h2 className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-              CryptoDropScout
-            </h2>
-
-            <p className="mt-4 text-gray-400">
-              Stay Informed • Stay Ahead • Stay Connected
-            </p>
-
-          </div>
-
-          <div className="flex flex-wrap gap-4">
-
-            <a
-              href="https://youtube.com/@cryptodrop_scout"
-              target="_blank"
-              className="px-6 py-4 rounded-2xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition"
-            >
-              YouTube
-            </a>
-
-            <a
-              href="https://x.com/cryptodrpscout"
-              target="_blank"
-              className="px-6 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
-            >
-              X / Twitter
-            </a>
-
-            <a
-              href="https://github.com/Hunterkak"
-              target="_blank"
-              className="px-6 py-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition"
-            >
-              GitHub
-            </a>
-
-          </div>
-
-        </div>
-
-      </footer>
 
     </main>
 

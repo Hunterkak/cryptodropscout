@@ -1,4 +1,5 @@
 import { db } from './firebase';
+
 import {
   collection,
   addDoc,
@@ -8,12 +9,13 @@ import {
   getDocs,
   query,
   where,
-  orderBy,
 } from 'firebase/firestore';
 
 const COL = 'projects';
 
+// GET PROJECT BY SLUG
 export async function getProjectBySlug(slug: string) {
+
   const q = query(
     collection(db, COL),
     where('slug', '==', slug)
@@ -31,13 +33,12 @@ export async function getProjectBySlug(slug: string) {
   };
 }
 
+// GET ALL PROJECTS
 export async function getAllProjects() {
-  const q = query(
-    collection(db, COL),
-    orderBy('createdAt', 'desc')
-  );
 
-  const snap = await getDocs(q);
+  const snap = await getDocs(
+    collection(db, COL)
+  );
 
   return snap.docs.map((d) => ({
     id: d.id,
@@ -45,7 +46,27 @@ export async function getAllProjects() {
   }));
 }
 
+// GET PROJECTS BY CATEGORY
+export async function getProjectsByCategory(category: string) {
+
+  const snap = await getDocs(
+    collection(db, COL)
+  );
+
+  return snap.docs
+    .map((d) => ({
+      id: d.id,
+      ...d.data(),
+    }))
+    .filter(
+      (p: any) =>
+        p.category?.toLowerCase() === category.toLowerCase()
+    );
+}
+
+// ADD PROJECT
 export async function addProject(data: any) {
+
   const ref = await addDoc(
     collection(db, COL),
     data
@@ -54,13 +75,22 @@ export async function addProject(data: any) {
   return ref.id;
 }
 
+// UPDATE PROJECT
 export async function updateProject(
   id: string,
   data: any
 ) {
-  await updateDoc(doc(db, COL, id), data);
+
+  await updateDoc(
+    doc(db, COL, id),
+    data
+  );
 }
 
+// DELETE PROJECT
 export async function deleteProject(id: string) {
-  await deleteDoc(doc(db, COL, id));
+
+  await deleteDoc(
+    doc(db, COL, id)
+  );
 }

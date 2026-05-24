@@ -1,381 +1,184 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
-import { db } from "../../lib/firebase";
+import Link from 'next/link';
 
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  updateDoc,
-} from "firebase/firestore";
+import { useParams } from 'next/navigation';
 
-export default function AdminPage() {
+import { getProjectBySlug } from '@/lib/projects';
 
-  const [projects, setProjects] = useState<any[]>([]);
+export default function ProjectPage() {
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [image, setImage] = useState("");
+  const params = useParams();
 
-  const [link, setLink] = useState("");
-  const [airdrop, setAirdrop] = useState("");
-  const [twitter, setTwitter] = useState("");
-  const [youtube, setYoutube] = useState("");
+  const id = params?.id as string;
 
-  const [status, setStatus] =
-    useState("Active");
+  const [project, setProject] = useState<any>(null);
 
-  const [difficulty, setDifficulty] =
-    useState("Easy");
-
-  const [reward, setReward] =
-    useState("Potential");
-
-  const [featured, setFeatured] =
-    useState(false);
-
-  const [tags, setTags] = useState("");
-
-  const [guide, setGuide] =
-    useState("");
-
-  const [editingId, setEditingId] =
-    useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
 
-    const unsubscribe = onSnapshot(
-      collection(db, "projects"),
-      (snapshot) => {
+    async function fetchProject() {
 
-        const data = snapshot.docs.map(
-          (doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          })
-        );
+      try {
 
-        setProjects(data);
+        const data = await getProjectBySlug(id);
+
+        setProject(data);
+
+      } catch (error) {
+
+        console.error(error);
+
+      } finally {
+
+        setLoading(false);
 
       }
-    );
-
-    return () => unsubscribe();
-
-  }, []);
-
-  const resetForm = () => {
-
-    setTitle("");
-    setDescription("");
-    setImage("");
-
-    setLink("");
-    setAirdrop("");
-    setTwitter("");
-    setYoutube("");
-
-    setStatus("Active");
-    setDifficulty("Easy");
-    setReward("Potential");
-
-    setFeatured(false);
-
-    setTags("");
-    setGuide("");
-
-    setEditingId("");
-
-  };
-
-  const handleSubmit = async () => {
-
-    const projectData = {
-
-      title,
-      description,
-      image,
-
-      link,
-      airdrop,
-      twitter,
-      youtube,
-
-      status,
-      difficulty,
-      reward,
-
-      featured,
-
-      tags: tags
-        .split(",")
-        .map((tag) => tag.trim()),
-
-      guide: guide
-        .split("\n")
-        .filter((line) => line.trim() !== ""),
-
-      createdAt: Date.now(),
-
-    };
-
-    if (editingId) {
-
-      await updateDoc(
-        doc(db, "projects", editingId),
-        projectData
-      );
-
-    } else {
-
-      await addDoc(
-        collection(db, "projects"),
-        projectData
-      );
 
     }
 
-    resetForm();
+    if (id) {
+      fetchProject();
+    }
 
-  };
+  }, [id]);
 
-  const handleDelete = async (
-    id: string
-  ) => {
+  if (loading) {
 
-    await deleteDoc(
-      doc(db, "projects", id)
+    return (
+      <div className="min-h-screen bg-[#020817] flex items-center justify-center text-white text-3xl">
+        Loading...
+      </div>
     );
 
-  };
+  }
 
-  const handleEdit = (project: any) => {
+  if (!project) {
 
-    setEditingId(project.id);
-
-    setTitle(project.title || "");
-    setDescription(
-      project.description || ""
+    return (
+      <div className="min-h-screen bg-[#020817] flex items-center justify-center text-white text-3xl">
+        Project Not Found
+      </div>
     );
 
-    setImage(project.image || "");
-
-    setLink(project.link || "");
-    setAirdrop(
-      project.airdrop || ""
-    );
-
-    setTwitter(
-      project.twitter || ""
-    );
-
-    setYoutube(
-      project.youtube || ""
-    );
-
-    setStatus(project.status || "Active");
-
-    setDifficulty(
-      project.difficulty || "Easy"
-    );
-
-    setReward(
-      project.reward || "Potential"
-    );
-
-    setFeatured(
-      project.featured || false
-    );
-
-    setTags(
-      project.tags?.join(", ") || ""
-    );
-
-    setGuide(
-      project.guide?.join("\n") || ""
-    );
-
-  };
+  }
 
   return (
 
-    <main className="min-h-screen bg-[#020817] text-white px-6 py-20">
+    <main className="min-h-screen bg-[#020817] text-white px-6 py-16">
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-6xl mx-auto">
 
-        <h1 className="text-6xl font-black mb-14">
-          Ultimate Admin Panel
-        </h1>
+        <Link
+          href="/airdrops"
+          className="text-purple-400 mb-10 inline-block"
+        >
+          ← Back
+        </Link>
 
-        {/* FORM */}
+        <img
+          src={project.image}
+          alt={project.title}
+          className="w-full h-[420px] object-cover rounded-[32px] border border-white/10"
+        />
 
-        <div className="bg-white/5 border border-white/10 rounded-[36px] p-10 mb-16">
+        <div className="mt-10">
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="flex flex-wrap items-center gap-4 mb-6">
 
-            <input
-              type="text"
-              placeholder="Project Title"
-              value={title}
-              onChange={(e) =>
-                setTitle(e.target.value)
-              }
-              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
-            />
+            <span className="px-4 py-2 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+              {project.reward}
+            </span>
 
-            <input
-              type="text"
-              placeholder="Image URL"
-              value={image}
-              onChange={(e) =>
-                setImage(e.target.value)
-              }
-              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
-            />
+            <span className="px-4 py-2 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+              {project.difficulty}
+            </span>
 
-            <input
-              type="text"
-              placeholder="Website Link"
-              value={link}
-              onChange={(e) =>
-                setLink(e.target.value)
-              }
-              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
-            />
-
-            <input
-              type="text"
-              placeholder="Airdrop Link"
-              value={airdrop}
-              onChange={(e) =>
-                setAirdrop(e.target.value)
-              }
-              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
-            />
-
-            <input
-              type="text"
-              placeholder="Twitter/X Link"
-              value={twitter}
-              onChange={(e) =>
-                setTwitter(e.target.value)
-              }
-              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
-            />
-
-            <input
-              type="text"
-              placeholder="YouTube Guide Link"
-              value={youtube}
-              onChange={(e) =>
-                setYoutube(e.target.value)
-              }
-              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
-            />
-
-          </div>
-
-          <textarea
-            placeholder="Short Description"
-            value={description}
-            onChange={(e) =>
-              setDescription(e.target.value)
-            }
-            className="w-full mt-6 px-6 py-5 rounded-2xl bg-[#0f172a] border border-white/10 outline-none min-h-[120px]"
-          />
-
-          <textarea
-            placeholder="Guide Steps (one line = one step)"
-            value={guide}
-            onChange={(e) =>
-              setGuide(e.target.value)
-            }
-            className="w-full mt-6 px-6 py-5 rounded-2xl bg-[#0f172a] border border-white/10 outline-none min-h-[220px]"
-          />
-
-          <div className="grid md:grid-cols-3 gap-6 mt-6">
-
-            <select
-              value={status}
-              onChange={(e) =>
-                setStatus(e.target.value)
-              }
-              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none text-white"
-            >
-              <option>Active</option>
-              <option>Hot</option>
-              <option>Potential</option>
-              <option>Confirmed</option>
-              <option>Ended</option>
-            </select>
-
-            <select
-              value={difficulty}
-              onChange={(e) =>
-                setDifficulty(e.target.value)
-              }
-              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none text-white"
-            >
-              <option>Easy</option>
-              <option>Medium</option>
-              <option>Hard</option>
-            </select>
-
-            <select
-              value={reward}
-              onChange={(e) =>
-                setReward(e.target.value)
-              }
-              className="px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none text-white"
-            >
-              <option>Potential</option>
-              <option>High Potential</option>
-              <option>Confirmed Reward</option>
-            </select>
-
-          </div>
-
-          <input
-            type="text"
-            placeholder="Tags (comma separated)"
-            value={tags}
-            onChange={(e) =>
-              setTags(e.target.value)
-            }
-            className="w-full mt-6 px-6 py-4 rounded-2xl bg-[#0f172a] border border-white/10 outline-none"
-          />
-
-          <div className="flex items-center gap-4 mt-8">
-
-            <input
-              type="checkbox"
-              checked={featured}
-              onChange={(e) =>
-                setFeatured(
-                  e.target.checked
-                )
-              }
-              className="w-6 h-6"
-            />
-
-            <span className="text-lg">
-              Featured Project
+            <span className="px-4 py-2 rounded-full bg-green-500/20 text-green-300 border border-green-500/30">
+              {project.status}
             </span>
 
           </div>
 
-          <button
-            onClick={handleSubmit}
-            className="mt-10 px-8 py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-lg hover:scale-105 transition"
-          >
-            {editingId
-              ? "Update Project"
-              : "Add Project"}
-          </button>
+          <h1 className="text-5xl font-black mb-6">
+            {project.title}
+          </h1>
+
+          <p className="text-gray-400 text-lg leading-8 mb-10">
+            {project.description}
+          </p>
+
+          <div className="flex flex-wrap gap-4 mb-12">
+
+            {project.link && (
+              <a
+                href={project.link}
+                target="_blank"
+                className="px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 transition"
+              >
+                Website
+              </a>
+            )}
+
+            {project.airdrop && (
+              <a
+                href={project.airdrop}
+                target="_blank"
+                className="px-6 py-3 rounded-2xl bg-purple-600 hover:bg-purple-700 transition"
+              >
+                Airdrop Link
+              </a>
+            )}
+
+            {project.twitter && (
+              <a
+                href={project.twitter}
+                target="_blank"
+                className="px-6 py-3 rounded-2xl bg-cyan-600 hover:bg-cyan-700 transition"
+              >
+                Twitter/X
+              </a>
+            )}
+
+            {project.youtube && (
+              <a
+                href={project.youtube}
+                target="_blank"
+                className="px-6 py-3 rounded-2xl bg-red-600 hover:bg-red-700 transition"
+              >
+                YouTube Guide
+              </a>
+            )}
+
+          </div>
+
+          <div className="grid gap-6">
+
+            {project.guide?.map(
+              (step: string, index: number) => (
+
+                <div
+                  key={index}
+                  className="bg-white/5 border border-white/10 rounded-[28px] p-8"
+                >
+
+                  <div className="text-cyan-400 text-sm mb-3">
+                    STEP {index + 1}
+                  </div>
+
+                  <p className="text-gray-300 text-lg leading-8">
+                    {step}
+                  </p>
+
+                </div>
+
+              )
+            )}
+
+          </div>
 
         </div>
 
