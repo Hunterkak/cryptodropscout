@@ -1,250 +1,174 @@
-"use client";
+'use client';
 
-import Link from "next/link";
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
+import { getProjectBySlug } from '@/lib/projects';
+import { Project } from '@/lib/types';
 
-import {
-  doc,
-  getDoc,
-} from "firebase/firestore";
+export default function ProjectPage() {
+  const params = useParams();
+  const id = params?.id as string;
 
-import { db } from "../../../lib/firebase";
-
-import {
-  useEffect,
-  useState,
-} from "react";
-
-export default function ProjectPage({
-  params,
-}: any) {
-
-  const [project, setProject] =
-    useState<any>(null);
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-
     async function fetchProject() {
-
-      const docRef = doc(
-        db,
-        "projects",
-        params.id
-      );
-
-      const docSnap =
-        await getDoc(docRef);
-
-      if (docSnap.exists()) {
-
-        setProject({
-          id: docSnap.id,
-          ...docSnap.data(),
-        });
-
+      try {
+        const data = await getProjectBySlug(id);
+        setProject(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
       }
-
     }
 
-    fetchProject();
+    if (id) {
+      fetchProject();
+    }
+  }, [id]);
 
-  }, [params.id]);
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#050816] text-white">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-cyan-400"></div>
+      </div>
+    );
+  }
 
   if (!project) {
-
     return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#050816] text-white">
+        <h1 className="text-4xl font-bold mb-4">Project Not Found</h1>
 
-      <main className="min-h-screen bg-[#020817] flex items-center justify-center text-white text-3xl">
-
-        <div className="text-center">
-
-          <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-8"></div>
-
-          Loading Guide...
-
-        </div>
-
-      </main>
-
+        <Link
+          href="/"
+          className="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-600 transition"
+        >
+          Go Home
+        </Link>
+      </div>
     );
-
   }
 
   return (
+    <div className="min-h-screen bg-[#050816] text-white">
+      <div className="max-w-6xl mx-auto px-4 py-10">
 
-    <main className="min-h-screen bg-[#020817] text-white overflow-hidden">
+        <Link
+          href="/"
+          className="text-cyan-400 hover:text-cyan-300 mb-6 inline-block"
+        >
+          ← Back Home
+        </Link>
 
-      {/* Glow */}
+        <div className="rounded-3xl overflow-hidden border border-white/10 bg-white/5">
 
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-cyan-500/20 blur-[140px] rounded-full"></div>
+          <img
+            src={project.bannerImage}
+            alt={project.name}
+            className="w-full h-[300px] object-cover"
+          />
 
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-500/20 blur-[140px] rounded-full"></div>
+          <div className="p-6">
 
-      <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 py-20">
+            <div className="flex flex-wrap items-center gap-3 mb-4">
 
-        {/* Top */}
-
-        <div className="flex flex-wrap items-center justify-between gap-6 mb-14">
-
-          <Link
-            href="/"
-            className="inline-flex px-6 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
-          >
-            ← Back Home
-          </Link>
-
-          <div className="flex flex-wrap gap-4">
-
-            {project.twitter && (
-
-              <a
-                href={project.twitter}
-                target="_blank"
-                className="px-6 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
-              >
-                X / Twitter
-              </a>
-
-            )}
-
-            {project.youtube && (
-
-              <a
-                href={project.youtube}
-                target="_blank"
-                className="px-6 py-4 rounded-2xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition text-red-300"
-              >
-                Watch Guide
-              </a>
-
-            )}
-
-            <a
-              href="https://github.com/Hunterkak"
-              target="_blank"
-              className="px-6 py-4 rounded-2xl bg-gray-500/10 border border-gray-500/20 hover:bg-gray-500/20 transition"
-            >
-              GitHub
-            </a>
-
-          </div>
-
-        </div>
-
-        {/* Hero */}
-
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-
-          <div>
-
-            <div className="flex flex-wrap gap-4 mb-8">
-
-              <span className="px-5 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">
+              <span className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-400 text-sm">
                 {project.status}
               </span>
 
-              <span className="px-5 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300">
+              <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-sm">
                 {project.reward}
               </span>
 
-              <span className="px-5 py-2 rounded-full bg-pink-500/10 border border-pink-500/20 text-pink-300">
+              <span className="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-300 text-sm">
                 {project.difficulty}
               </span>
 
             </div>
 
-            <h1 className="text-6xl md:text-7xl font-black leading-tight">
-              {project.title}
+            <h1 className="text-4xl font-extrabold mb-4">
+              {project.name}
             </h1>
 
-            <p className="mt-10 text-xl text-gray-400 leading-relaxed">
+            <p className="text-gray-400 text-lg mb-8">
               {project.description}
             </p>
 
-            <div className="flex flex-wrap gap-5 mt-12">
+            <div className="flex flex-wrap gap-4 mb-10">
 
-              {project.link && (
-
+              {project.websiteUrl && (
                 <a
-                  href={project.link}
+                  href={project.websiteUrl}
                   target="_blank"
-                  className="px-8 py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold hover:scale-105 transition"
+                  className="px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-600 transition"
                 >
-                  Open Website →
+                  Website
                 </a>
-
               )}
 
-              {project.airdrop && (
-
+              {project.twitterUrl && (
                 <a
-                  href={project.airdrop}
+                  href={project.twitterUrl}
                   target="_blank"
-                  className="px-8 py-5 rounded-2xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition"
+                  className="px-6 py-3 rounded-2xl bg-purple-500 hover:bg-purple-600 transition"
                 >
-                  Airdrop →
+                  Twitter / X
                 </a>
+              )}
 
+              {project.youtubeUrl && (
+                <a
+                  href={project.youtubeUrl}
+                  target="_blank"
+                  className="px-6 py-3 rounded-2xl bg-red-500 hover:bg-red-600 transition"
+                >
+                  YouTube Guide
+                </a>
               )}
 
             </div>
 
-          </div>
+            <div>
+              <h2 className="text-3xl font-bold mb-6">
+                Step-by-Step Guide
+              </h2>
 
-          <div>
+              <div className="space-y-5">
 
-            <img
-              src={project.image}
-              alt={project.title}
-              className="w-full rounded-[36px] object-cover"
-            />
+                {project.steps?.map((step, index) => (
+                  <div
+                    key={step.id}
+                    className="border border-white/10 rounded-2xl p-5 bg-white/5"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
 
-          </div>
+                      <div className="w-8 h-8 rounded-full bg-cyan-500 flex items-center justify-center font-bold">
+                        {index + 1}
+                      </div>
 
-        </div>
+                      <h3 className="text-xl font-semibold">
+                        {step.title}
+                      </h3>
 
-      </section>
+                    </div>
 
-      {/* Guide */}
+                    <p className="text-gray-400 leading-7">
+                      {step.description}
+                    </p>
 
-      <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 pb-24">
-
-        <div className="bg-white/5 border border-white/10 rounded-[36px] p-10">
-
-          <h2 className="text-5xl font-black mb-12">
-            Step-by-Step Guide
-          </h2>
-
-          <div className="space-y-8">
-
-            {(project.guide || []).map(
-              (step: string, index: number) => (
-
-                <div
-                  key={index}
-                  className="flex gap-6 items-start"
-                >
-
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center font-black text-xl shrink-0">
-                    {index + 1}
                   </div>
+                ))}
 
-                  <div className="text-xl text-gray-300 leading-relaxed pt-3">
-                    {step}
-                  </div>
-
-                </div>
-
-              )
-            )}
+              </div>
+            </div>
 
           </div>
-
         </div>
-
-      </section>
-
-    </main>
-
+      </div>
+    </div>
   );
-
 }
