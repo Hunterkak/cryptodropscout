@@ -1,45 +1,38 @@
-import "./globals.css";
+import './globals.css';
 
-import type { Metadata } from "next";
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
 
-  title: "CryptoDropScout",
-  
-  description:
-    "Discover early Web3 opportunities, airdrops, testnets and nodes before everyone else.",
+  metadataBase: new URL('https://cryptodropscout.vercel.app'),
 
-  keywords: [
-    "airdrop",
-    "crypto",
-    "testnet",
-    "web3",
-    "nodes",
-    "crypto alpha",
-  ],
+  title: 'CryptoDropScout',
+
+  description:
+    'Premium Crypto Airdrop & Testnet Discovery Platform',
 
   openGraph: {
 
-    title: "CryptoDropScout",
+    title: 'CryptoDropScout',
 
     description:
-      "Discover early Web3 opportunities before everyone else.",
+      'Discover premium crypto airdrops and testnets.',
 
-    url: "https://cryptodropscout.vercel.app",
+    url: 'https://cryptodropscout.vercel.app',
 
-    siteName: "CryptoDropScout",
+    siteName: 'CryptoDropScout',
 
     images: [
       {
-        url: "/projects/dac.png",
+        url: 'https://images.unsplash.com/photo-1639322537228-f710d846310a?w=1200',
         width: 1200,
         height: 630,
       },
     ],
 
-    locale: "en_US",
+    locale: 'en_US',
 
-    type: "website",
+    type: 'website',
 
   },
 
@@ -56,7 +49,9 @@ export default function RootLayout({
     <html lang="en">
 
       <body>
+
         {children}
+
       </body>
 
     </html>
