@@ -1,8 +1,13 @@
 'use client';
 
 import Link from "next/link";
+import { useMemo, useState } from "react";
 
 export default function Home() {
+
+  const [language, setLanguage] = useState("EN");
+
+  const [search, setSearch] = useState("");
 
   const projects = [
 
@@ -48,6 +53,14 @@ export default function Home() {
 
   ];
 
+  const filteredProjects = useMemo(() => {
+
+    return projects.filter((project) =>
+      project.title.toLowerCase().includes(search.toLowerCase())
+    );
+
+  }, [search]);
+
   return (
 
     <main className="min-h-screen bg-[#050816] text-white overflow-hidden">
@@ -62,7 +75,7 @@ export default function Home() {
 
       <header className="sticky top-0 z-50 border-b border-white/10 bg-[#050816]/80 backdrop-blur-xl">
 
-        <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between gap-4 flex-wrap">
 
           <Link
             href="/"
@@ -73,43 +86,78 @@ export default function Home() {
               C
             </div>
 
-            <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+            <h1 className="text-2xl md:text-3xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
               CryptoDropScout
             </h1>
 
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-5">
+          {/* Search */}
 
-            <Link
-              href="/"
-              className="px-5 py-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500/20 transition"
-            >
-              Home
-            </Link>
+          <div className="hidden md:flex flex-1 max-w-md">
 
-            <Link
-              href="/airdrops"
-              className="px-5 py-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition"
-            >
-              Airdrops
-            </Link>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="🔍 Search airdrops..."
+              className="w-full px-5 py-3 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-cyan-500"
+            />
 
-            <Link
-              href="/testnets"
-              className="px-5 py-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition"
-            >
-              Testnets
-            </Link>
+          </div>
 
-            <Link
-              href="/guides"
-              className="px-5 py-3 rounded-2xl bg-pink-500/10 border border-pink-500/20 hover:bg-pink-500/20 transition"
-            >
-              Guides
-            </Link>
+          {/* Language */}
 
-          </nav>
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white outline-none"
+          >
+            <option value="EN" className="text-black">🇺🇸 EN</option>
+            <option value="BN" className="text-black">🇧🇩 BN</option>
+            <option value="HI" className="text-black">🇮🇳 HI</option>
+          </select>
+
+        </div>
+
+        {/* Nav */}
+
+        <div className="max-w-7xl mx-auto px-6 pb-5 flex flex-wrap gap-4">
+
+          <Link
+            href="/"
+            className="px-5 py-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500/20 transition"
+          >
+            Home
+          </Link>
+
+          <Link
+            href="/airdrops"
+            className="px-5 py-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition"
+          >
+            Airdrops
+          </Link>
+
+          <Link
+            href="/testnets"
+            className="px-5 py-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition"
+          >
+            Testnets
+          </Link>
+
+          <Link
+            href="/guides"
+            className="px-5 py-3 rounded-2xl bg-pink-500/10 border border-pink-500/20 hover:bg-pink-500/20 transition"
+          >
+            Guides
+          </Link>
+
+          <Link
+            href="/admin"
+            className="px-5 py-3 rounded-2xl bg-green-500/10 border border-green-500/20 hover:bg-green-500/20 transition"
+          >
+            Admin
+          </Link>
 
         </div>
 
@@ -196,7 +244,7 @@ export default function Home() {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
 
-          {projects.map((project, index) => (
+          {filteredProjects.map((project, index) => (
 
             <div
               key={index}
@@ -247,6 +295,16 @@ export default function Home() {
             </div>
 
           ))}
+
+        </div>
+
+        {/* Load More */}
+
+        <div className="flex justify-center mt-16">
+
+          <button className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition">
+            Load More
+          </button>
 
         </div>
 

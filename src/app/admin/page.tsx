@@ -1,186 +1,286 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-import Link from 'next/link';
+import { addProject } from '@/lib/projects';
 
-import { useParams } from 'next/navigation';
+export default function AdminPage() {
 
-import { getProjectBySlug } from '@/lib/projects';
+  const [loading, setLoading] = useState(false);
 
-export default function ProjectPage() {
+  const [form, setForm] = useState({
 
-  const params = useParams();
+    title: '',
+    category: 'airdrop',
+    status: 'Potential',
+    difficulty: 'Easy',
+    reward: '$500+',
+    image: '',
+    description: '',
+    link: '',
+    airdrop: '',
+    twitter: '',
+    youtube: '',
+    guide: '',
 
-  const id = params?.id as string;
+  });
 
-  const [project, setProject] = useState<any>(null);
+  async function handleSubmit(
+    e: React.FormEvent
+  ) {
 
-  const [loading, setLoading] = useState(true);
+    e.preventDefault();
 
-  useEffect(() => {
+    try {
 
-    async function fetchProject() {
+      setLoading(true);
 
-      try {
+      const slug = form.title
+        .toLowerCase()
+        .replace(/\s+/g, '-');
 
-        const data = await getProjectBySlug(id);
+      await addProject({
 
-        setProject(data);
+        ...form,
 
-      } catch (error) {
+        slug,
 
-        console.error(error);
+        createdAt: Date.now(),
 
-      } finally {
+        guide: form.guide
+          .split('\n')
+          .filter(Boolean),
 
-        setLoading(false);
+      });
 
-      }
+      alert('Project Added Successfully');
+
+      setForm({
+
+        title: '',
+        category: 'airdrop',
+        status: 'Potential',
+        difficulty: 'Easy',
+        reward: '$500+',
+        image: '',
+        description: '',
+        link: '',
+        airdrop: '',
+        twitter: '',
+        youtube: '',
+        guide: '',
+
+      });
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert('Error adding project');
+
+    } finally {
+
+      setLoading(false);
 
     }
-
-    if (id) {
-      fetchProject();
-    }
-
-  }, [id]);
-
-  if (loading) {
-
-    return (
-      <div className="min-h-screen bg-[#020817] flex items-center justify-center text-white text-3xl">
-        Loading...
-      </div>
-    );
-
-  }
-
-  if (!project) {
-
-    return (
-      <div className="min-h-screen bg-[#020817] flex items-center justify-center text-white text-3xl">
-        Project Not Found
-      </div>
-    );
 
   }
 
   return (
 
-    <main className="min-h-screen bg-[#020817] text-white px-6 py-16">
+    <main className="min-h-screen bg-[#050816] text-white px-6 py-16">
 
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-5xl mx-auto">
 
-        <Link
-          href="/airdrops"
-          className="text-purple-400 mb-10 inline-block"
+        <h1 className="text-6xl font-black mb-14 text-center">
+          Ultimate Admin Panel
+        </h1>
+
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6 bg-white/5 border border-white/10 p-10 rounded-[40px]"
         >
-          ← Back
-        </Link>
 
-        <img
-          src={project.image}
-          alt={project.title}
-          className="w-full h-[420px] object-cover rounded-[32px] border border-white/10"
-        />
+          <div className="grid md:grid-cols-2 gap-6">
 
-        <div className="mt-10">
+            <input
+              type="text"
+              placeholder="Project Title"
+              value={form.title}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  title: e.target.value,
+                })
+              }
+              className="p-4 rounded-2xl bg-[#0d1326] border border-white/10 outline-none"
+              required
+            />
 
-          <div className="flex flex-wrap items-center gap-4 mb-6">
+            <input
+              type="text"
+              placeholder="Image URL"
+              value={form.image}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  image: e.target.value,
+                })
+              }
+              className="p-4 rounded-2xl bg-[#0d1326] border border-white/10 outline-none"
+            />
 
-            <span className="px-4 py-2 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-              {project.reward}
-            </span>
+            <input
+              type="text"
+              placeholder="Website Link"
+              value={form.link}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  link: e.target.value,
+                })
+              }
+              className="p-4 rounded-2xl bg-[#0d1326] border border-white/10 outline-none"
+            />
 
-            <span className="px-4 py-2 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
-              {project.difficulty}
-            </span>
+            <input
+              type="text"
+              placeholder="Airdrop Link"
+              value={form.airdrop}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  airdrop: e.target.value,
+                })
+              }
+              className="p-4 rounded-2xl bg-[#0d1326] border border-white/10 outline-none"
+            />
 
-            <span className="px-4 py-2 rounded-full bg-green-500/20 text-green-300 border border-green-500/30">
-              {project.status}
-            </span>
+            <input
+              type="text"
+              placeholder="Twitter/X Link"
+              value={form.twitter}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  twitter: e.target.value,
+                })
+              }
+              className="p-4 rounded-2xl bg-[#0d1326] border border-white/10 outline-none"
+            />
 
-          </div>
-
-          <h1 className="text-5xl font-black mb-6">
-            {project.title}
-          </h1>
-
-          <p className="text-gray-400 text-lg leading-8 mb-10">
-            {project.description}
-          </p>
-
-          <div className="flex flex-wrap gap-4 mb-12">
-
-            {project.link && (
-              <a
-                href={project.link}
-                target="_blank"
-                className="px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 transition"
-              >
-                Website
-              </a>
-            )}
-
-            {project.airdrop && (
-              <a
-                href={project.airdrop}
-                target="_blank"
-                className="px-6 py-3 rounded-2xl bg-purple-600 hover:bg-purple-700 transition"
-              >
-                Airdrop Link
-              </a>
-            )}
-
-            {project.twitter && (
-              <a
-                href={project.twitter}
-                target="_blank"
-                className="px-6 py-3 rounded-2xl bg-cyan-600 hover:bg-cyan-700 transition"
-              >
-                Twitter/X
-              </a>
-            )}
-
-            {project.youtube && (
-              <a
-                href={project.youtube}
-                target="_blank"
-                className="px-6 py-3 rounded-2xl bg-red-600 hover:bg-red-700 transition"
-              >
-                YouTube Guide
-              </a>
-            )}
-
-          </div>
-
-          <div className="grid gap-6">
-
-            {project.guide?.map(
-              (step: string, index: number) => (
-
-                <div
-                  key={index}
-                  className="bg-white/5 border border-white/10 rounded-[28px] p-8"
-                >
-
-                  <div className="text-cyan-400 text-sm mb-3">
-                    STEP {index + 1}
-                  </div>
-
-                  <p className="text-gray-300 text-lg leading-8">
-                    {step}
-                  </p>
-
-                </div>
-
-              )
-            )}
+            <input
+              type="text"
+              placeholder="YouTube Guide Link"
+              value={form.youtube}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  youtube: e.target.value,
+                })
+              }
+              className="p-4 rounded-2xl bg-[#0d1326] border border-white/10 outline-none"
+            />
 
           </div>
 
-        </div>
+          <textarea
+            placeholder="Short Description"
+            value={form.description}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                description: e.target.value,
+              })
+            }
+            className="w-full h-40 p-4 rounded-2xl bg-[#0d1326] border border-white/10 outline-none"
+          />
+
+          <textarea
+            placeholder="Guide Steps (one line = one step)"
+            value={form.guide}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                guide: e.target.value,
+              })
+            }
+            className="w-full h-56 p-4 rounded-2xl bg-[#0d1326] border border-white/10 outline-none"
+          />
+
+          <div className="grid md:grid-cols-4 gap-6">
+
+            <select
+              value={form.category}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  category: e.target.value,
+                })
+              }
+              className="p-4 rounded-2xl bg-[#0d1326] border border-white/10 outline-none"
+            >
+              <option value="airdrop">Airdrop</option>
+              <option value="testnet">Testnet</option>
+            </select>
+
+            <select
+              value={form.status}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  status: e.target.value,
+                })
+              }
+              className="p-4 rounded-2xl bg-[#0d1326] border border-white/10 outline-none"
+            >
+              <option>Potential</option>
+              <option>Hot</option>
+              <option>Active</option>
+              <option>Live</option>
+            </select>
+
+            <select
+              value={form.difficulty}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  difficulty: e.target.value,
+                })
+              }
+              className="p-4 rounded-2xl bg-[#0d1326] border border-white/10 outline-none"
+            >
+              <option>Easy</option>
+              <option>Medium</option>
+              <option>Hard</option>
+            </select>
+
+            <input
+              type="text"
+              placeholder="Reward"
+              value={form.reward}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  reward: e.target.value,
+                })
+              }
+              className="p-4 rounded-2xl bg-[#0d1326] border border-white/10 outline-none"
+            />
+
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-black text-xl hover:scale-[1.01] transition"
+          >
+            {loading
+              ? 'ADDING PROJECT...'
+              : 'ADD PROJECT'}
+          </button>
+
+        </form>
 
       </div>
 
