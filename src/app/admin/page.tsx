@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 import {
   addProject,
@@ -9,6 +10,8 @@ import {
   updateProject,
   addBlog,
   getAllBlogs,
+  deleteBlog,
+  updateBlog,
 } from '@/lib/projects';
 
 const ADMIN_PASSWORD = 'cryptoscout2025';
@@ -34,6 +37,9 @@ export default function AdminPage() {
     useState<any[]>([]);
 
   const [editingId, setEditingId] =
+    useState<string | null>(null);
+
+  const [editingBlogId, setEditingBlogId] =
     useState<string | null>(null);
 
   const [preview, setPreview] =
@@ -239,9 +245,16 @@ export default function AdminPage() {
       const slug =
         blogForm.title
           .toLowerCase()
-          .replace(/\s+/g, '-');
+          .replace(
+            /[^a-z0-9\s-]/g,
+            ''
+          )
+          .replace(
+            /\s+/g,
+            '-'
+          );
 
-      await addBlog({
+      const blogData = {
 
         title:
           blogForm.title,
@@ -272,10 +285,33 @@ export default function AdminPage() {
         date:
           new Date().toLocaleDateString(),
 
-      });
+      };
 
-      alert(
-        'Blog Published Successfully'
+      if (editingBlogId) {
+
+        await updateBlog(
+          editingBlogId,
+          blogData
+        );
+
+        alert(
+          'Blog Updated Successfully'
+        );
+
+      } else {
+
+        await addBlog(
+          blogData
+        );
+
+        alert(
+          'Blog Published Successfully'
+        );
+
+      }
+
+      setEditingBlogId(
+        null
       );
 
       setBlogForm({
@@ -305,6 +341,87 @@ export default function AdminPage() {
       setBlogLoading(false);
 
     }
+
+  }
+
+  async function handleBlogDelete(
+    id: string
+  ) {
+
+    const confirmDelete =
+      confirm(
+        'Delete this blog?'
+      );
+
+    if (!confirmDelete)
+      return;
+
+    try {
+
+      await deleteBlog(id);
+
+      await loadBlogs();
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        'Blog delete failed'
+      );
+
+    }
+
+  }
+
+  function handleBlogEdit(
+    blog: any
+  ) {
+
+    setEditingBlogId(
+      blog.id
+    );
+
+    setBlogForm({
+
+      title:
+        blog.title || '',
+
+      author:
+        blog.author || '',
+
+      category:
+        blog.category ||
+        'Guide',
+
+      image:
+        blog.image || '',
+
+      description:
+        blog.description ||
+        '',
+
+      content:
+        blog.content ||
+        '',
+
+      featured:
+        blog.featured ||
+        false,
+
+    });
+
+    setActiveTab(
+      'blogs'
+    );
+
+    window.scrollTo({
+
+      top: 0,
+
+      behavior: 'smooth',
+
+    });
 
   }
 
@@ -663,6 +780,48 @@ export default function AdminPage() {
                     setForm({
                       ...form,
                       link:
+                        e.target.value,
+                    })
+                  }
+                  className="p-4 rounded-2xl bg-[#0d1326] border border-white/10 outline-none"
+                />
+
+                <input
+                  type="text"
+                  placeholder="Airdrop Link"
+                  value={form.airdrop}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      airdrop:
+                        e.target.value,
+                    })
+                  }
+                  className="p-4 rounded-2xl bg-[#0d1326] border border-white/10 outline-none"
+                />
+
+                <input
+                  type="text"
+                  placeholder="Twitter/X Link"
+                  value={form.twitter}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      twitter:
+                        e.target.value,
+                    })
+                  }
+                  className="p-4 rounded-2xl bg-[#0d1326] border border-white/10 outline-none"
+                />
+
+                <input
+                  type="text"
+                  placeholder="YouTube Guide Link"
+                  value={form.youtube}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      youtube:
                         e.target.value,
                     })
                   }
@@ -1178,6 +1337,8 @@ export default function AdminPage() {
 
               </div>
 
+              {/* UPDATE BLOG SUBMIT BUTTON */}
+
               <button
                 type="submit"
                 disabled={
@@ -1187,7 +1348,9 @@ export default function AdminPage() {
               >
 
                 {blogLoading
-                  ? 'PUBLISHING...'
+                  ? 'PROCESSING...'
+                  : editingBlogId
+                  ? 'UPDATE BLOG'
                   : 'PUBLISH BLOG'}
 
               </button>
@@ -1259,6 +1422,48 @@ export default function AdminPage() {
                           }
 
                         </p>
+
+                        {/* BLOG ACTION BUTTONS */}
+
+                        <div className="flex gap-3 mt-8">
+
+                          <Link
+                            href={`/blog/${blog.slug}`}
+                            target="_blank"
+                            className="flex-1 py-4 rounded-2xl bg-cyan-600 font-bold text-center"
+                          >
+
+                            Open
+
+                          </Link>
+
+                          <button
+                            onClick={() =>
+                              handleBlogEdit(
+                                blog
+                              )
+                            }
+                            className="flex-1 py-4 rounded-2xl bg-blue-600 font-bold"
+                          >
+
+                            Edit
+
+                          </button>
+
+                          <button
+                            onClick={() =>
+                              handleBlogDelete(
+                                blog.id
+                              )
+                            }
+                            className="flex-1 py-4 rounded-2xl bg-red-500 font-bold"
+                          >
+
+                            Delete
+
+                          </button>
+
+                        </div>
 
                       </div>
 

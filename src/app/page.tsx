@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import {
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 
@@ -11,11 +12,15 @@ import Navbar from './components/Navbar';
 
 import {
   getAllProjects,
+  getAllBlogs,
 } from '@/lib/projects';
 
 export default function HomePage() {
 
   const [projects, setProjects] =
+    useState<any[]>([]);
+
+  const [blogs, setBlogs] =
     useState<any[]>([]);
 
   const [activeFilter, setActiveFilter] =
@@ -27,10 +32,19 @@ export default function HomePage() {
 
       try {
 
-        const data =
+        const projectData =
           await getAllProjects();
 
-        setProjects(data);
+        const blogData =
+          await getAllBlogs();
+
+        setProjects(
+          projectData
+        );
+
+        setBlogs(
+          blogData
+        );
 
       } catch (error) {
 

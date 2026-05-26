@@ -134,6 +134,19 @@ export default function BlogPage() {
 
           </p>
 
+          <div className="flex items-center justify-center mt-10">
+
+            <Link
+              href="/"
+              className="px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-white hover:scale-105 transition"
+            >
+
+              🏠 Homepage
+
+            </Link>
+
+          </div>
+
         </div>
 
       </section>
