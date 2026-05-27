@@ -28,6 +28,9 @@ const firebaseConfig = {
   appId:
     "1:174591190986:web:b6e43f3658c032103a5133",
 
+  measurementId:
+    "G-QXVMCW1Q0V",
+
 };
 
 const app =
@@ -38,3 +41,5 @@ export const db =
 
 export const storage =
   getStorage(app);
+
+export default app;
