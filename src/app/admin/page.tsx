@@ -805,13 +805,49 @@ export default function AdminPage() {
                   onChange={(e) => setBlogForm({ ...blogForm, author: e.target.value })}
                   className="p-4 rounded-2xl bg-[#0d1326] border border-white/10 outline-none"
                 />
-                <input
-                  type="text"
-                  placeholder="Thumbnail URL"
-                  value={blogForm.image}
-                  onChange={(e) => setBlogForm({ ...blogForm, image: e.target.value })}
-                  className="p-4 rounded-2xl bg-[#0d1326] border border-white/10 outline-none"
-                />
+
+                {/* ✅ REPLACED: Blog Image Upload with Preview */}
+                <div className="space-y-3">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e: any) => {
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      try {
+                        setBlogLoading(true);
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        const res = await fetch('/api/upload', {
+                          method: 'POST',
+                          body: formData,
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                          setBlogForm((prev) => ({
+                            ...prev,
+                            image: data.url,
+                          }));
+                          alert('Blog Image Uploaded Successfully');
+                        }
+                      } catch (error) {
+                        console.error(error);
+                        alert('Upload Failed');
+                      } finally {
+                        setBlogLoading(false);
+                      }
+                    }}
+                    className="p-4 rounded-2xl bg-[#0d1326] border border-white/10 outline-none w-full"
+                  />
+                  {blogForm.image && (
+                    <img
+                      src={blogForm.image}
+                      alt="Blog Preview"
+                      className="w-full h-48 object-cover rounded-2xl border border-white/10"
+                    />
+                  )}
+                </div>
+
                 <select
                   value={blogForm.category}
                   onChange={(e) => setBlogForm({ ...blogForm, category: e.target.value })}

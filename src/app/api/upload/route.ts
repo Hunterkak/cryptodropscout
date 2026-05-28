@@ -1,22 +1,17 @@
-import { NextResponse }
-from "next/server";
+import { NextResponse } from 'next/server';
 
-import { v2 as cloudinary }
-from "cloudinary";
+import { v2 as cloudinary } from 'cloudinary';
 
 cloudinary.config({
 
   cloud_name:
-    process.env
-      .NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    'dgdqlhwo7',
 
   api_key:
-    process.env
-      .CLOUDINARY_API_KEY,
+    '447565838424196',
 
   api_secret:
-    process.env
-      .CLOUDINARY_API_SECRET,
+    'DcXgBS4l0T3hMzo5nxeSwM0FrWE',
 
 });
 
@@ -31,16 +26,28 @@ export async function POST(
 
     const file =
       formData.get(
-        "file"
+        'file'
       ) as File;
 
     if (!file) {
 
       return NextResponse.json(
+
         {
+
           success: false,
+
+          error:
+            'No file uploaded',
+
         },
-        { status: 400 }
+
+        {
+
+          status: 400,
+
+        }
+
       );
 
     }
@@ -58,51 +65,81 @@ export async function POST(
           reject
         ) => {
 
-          cloudinary
-            .uploader
-            .upload_stream(
+          const stream =
+            cloudinary
+              .uploader
+              .upload_stream(
 
-              {
-                folder:
-                  "projects",
-              },
+                {
 
-              (
-                error,
-                result
-              ) => {
+                  folder:
+                    'projects',
 
-                if (error)
-                  reject(error);
+                },
 
-                else
-                  resolve(
-                    result
-                  );
+                (
+                  error,
+                  result
+                ) => {
 
-              }
-            )
-            .end(buffer);
+                  if (error) {
+
+                    reject(
+                      error
+                    );
+
+                  } else {
+
+                    resolve(
+                      result
+                    );
+
+                  }
+
+                }
+              );
+
+          stream.end(
+            buffer
+          );
 
         }
       );
 
     return NextResponse.json({
+
       success: true,
+
       url:
         (result as any)
           .secure_url,
+
     });
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      'Upload Error:',
+      error
+    );
 
     return NextResponse.json(
+
       {
+
         success: false,
+
+        error:
+          'Upload failed',
+
       },
-      { status: 500 }
+
+      {
+
+        status: 500,
+
+      }
+
     );
 
   }
