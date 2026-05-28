@@ -36,7 +36,7 @@ button {
   cursor: pointer;
 }
 
-input,
+/* KEEP ADMIN PANEL TEXT WHITE */
 textarea,
 select {
   color: white;
@@ -45,6 +45,16 @@ select {
 select option {
   background: #0b1020;
   color: white;
+}
+
+/* FIX WALLET CHECKER AUTOFILL */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill {
+  -webkit-text-fill-color: #111827 !important;
+  -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 ::-webkit-scrollbar {

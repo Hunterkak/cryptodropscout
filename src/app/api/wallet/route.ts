@@ -81,6 +81,42 @@ const CHAINS = [
     covalent: 'scroll-mainnet',
   },
 
+  {
+    name: 'Avalanche',
+    chainId: 43114,
+    covalent: 'avalanche-mainnet',
+  },
+
+  {
+    name: 'Fantom',
+    chainId: 250,
+    covalent: 'fantom-mainnet',
+  },
+
+  {
+    name: 'Mantle',
+    chainId: 5000,
+    covalent: 'mantle-mainnet',
+  },
+
+  {
+    name: 'Mode',
+    chainId: 34443,
+    covalent: 'mode-mainnet',
+  },
+
+  {
+    name: 'Blast',
+    chainId: 81457,
+    covalent: 'blast-mainnet',
+  },
+
+  {
+    name: 'Metis',
+    chainId: 1088,
+    covalent: 'metis-mainnet',
+  },
+
 ];
 
 const VERIFIED_SYMBOLS = [
@@ -114,6 +150,43 @@ const VERIFIED_SYMBOLS = [
   'CAKE',
   'XVS',
   'OFC',
+  'BTC',
+  'WBTC',
+  'SOL',
+  'DOGE',
+  'TRX',
+  'TON',
+  'XRP',
+  'ADA',
+  'DOT',
+  'AVAX',
+  'ATOM',
+  'NEAR',
+  'SEI',
+  'SUI',
+  'APT',
+  'INJ',
+  'RUNE',
+  'JUP',
+  'PYTH',
+  'FET',
+  'RNDR',
+  'TIA',
+  'MANTA',
+  'ALT',
+  'DYM',
+  'AEVO',
+  'ETHFI',
+  'REZ',
+  'PIXEL',
+  'PORTAL',
+  'NOT',
+  'CATI',
+  'MEME',
+  'BOME',
+  'AI',
+  'COOKIE',
+  'BANANA',
 
 ];
 
@@ -846,21 +919,6 @@ async function fetchClaimedAirdrops(
   return results;
 }
 
-async function fetchPendingAirdrops() {
-
-  return [
-
-    {
-      symbol: 'ZK',
-      name: 'zkSync',
-      amount: '?',
-      date: 'Pending',
-      status: 'Pending',
-    },
-
-  ];
-}
-
 async function fetchFirestoreAirdrops(
   address: string
 ) {
@@ -930,17 +988,58 @@ async function fetchFirestoreAirdrops(
 
             const found =
               txs.find(
-                (
-                  tx: any
-                ) =>
-                  (
-                    tx.contractAddress ||
-                    ''
-                  ).toLowerCase() ===
-                  (
-                    drop.contract ||
-                    ''
-                  ).toLowerCase()
+                (tx: any) => {
+
+                  const txContract =
+                    (
+                      tx.contractAddress ||
+                      ''
+                    ).toLowerCase();
+
+                  const dropContract =
+                    (
+                      drop.contract ||
+                      ''
+                    ).toLowerCase();
+
+                  const txName =
+                    (
+                      tx.tokenName ||
+                      ''
+                    ).toLowerCase();
+
+                  const dropName =
+                    (
+                      drop.title ||
+                      ''
+                    ).toLowerCase();
+
+                  const txSymbol =
+                    (
+                      tx.tokenSymbol ||
+                      ''
+                    ).toLowerCase();
+
+                  const dropSymbol =
+                    (
+                      drop.tokenSymbol ||
+                      ''
+                    ).toLowerCase();
+
+                  return (
+
+                    txContract ===
+                      dropContract ||
+
+                    txName.includes(
+                      dropName
+                    ) ||
+
+                    txSymbol ===
+                      dropSymbol
+
+                  );
+                }
               );
 
             if (
@@ -950,10 +1049,10 @@ async function fetchFirestoreAirdrops(
               results.push({
 
                 symbol:
-                  drop.symbol,
+                  drop.tokenSymbol,
 
                 name:
-                  drop.name,
+                  drop.title,
 
                 amount:
                   (
@@ -982,8 +1081,7 @@ async function fetchFirestoreAirdrops(
                 status:
                   'Claimed',
 
-                logo:
-                  drop.logo,
+                logo: '',
 
               });
 
@@ -992,10 +1090,10 @@ async function fetchFirestoreAirdrops(
               results.push({
 
                 symbol:
-                  drop.symbol,
+                  drop.tokenSymbol,
 
                 name:
-                  drop.name,
+                  drop.title,
 
                 amount:
                   '?',
@@ -1006,8 +1104,7 @@ async function fetchFirestoreAirdrops(
                 status:
                   'Pending',
 
-                logo:
-                  drop.logo,
+                logo: '',
 
               });
             }
@@ -1130,8 +1227,6 @@ export async function GET(
 
       claimedAirdrops,
 
-      pendingAirdrops,
-
       firestoreAirdrops,
 
     ] =
@@ -1148,8 +1243,6 @@ export async function GET(
         fetchClaimedAirdrops(
           address
         ),
-
-        fetchPendingAirdrops(),
 
         fetchFirestoreAirdrops(
           address
@@ -1215,8 +1308,6 @@ export async function GET(
 
     const allPending =
       [
-        ...pendingAirdrops,
-
         ...firestoreAirdrops.filter(
           (a: any) =>
             a.status ===
