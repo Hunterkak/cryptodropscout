@@ -327,7 +327,6 @@ const TOKEN_PRICES: Record<string,number>={ETH:2500,WETH:2500,BNB:600,WBNB:600,M
 
 const ChevronDown=()=>(<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>);
 
-// ─── Bridge TX Tracker ───────────────────────────────────────────────────────
 async function pollLifiStatus(txHash: string, fromChainId: number, toChainId: number, maxAttempts=40): Promise<{destTxHash?:string;status:string}> {
   for (let i=0;i<maxAttempts;i++) {
     await new Promise(r=>setTimeout(r,6000));
@@ -354,6 +353,15 @@ async function pollRelayStatus(requestId: string, toChainId: number, maxAttempts
   return {status:"TIMEOUT"};
 }
 
+// Wallet picker list
+const WALLET_OPTIONS = [
+  { name:"MetaMask",    icon:"🦊", id:"metamask" },
+  { name:"Rabby",       icon:"🐰", id:"rabby" },
+  { name:"OKX Wallet",  icon:"⭕", id:"okx" },
+  { name:"Trust Wallet",icon:"🛡️", id:"trust" },
+  { name:"Coinbase",    icon:"🔵", id:"coinbase" },
+];
+
 export default function CdsQuantumPage() {
   const [activeTab, setActiveTab] = useState<"swap"|"bridge">("swap");
   const [fromChain, setFromChain] = useState<Chain>(CHAINS[0]);
@@ -374,11 +382,11 @@ export default function CdsQuantumPage() {
   const [walletConnected, setWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState("");
   const [showWalletMenu, setShowWalletMenu] = useState(false);
+  const [showWalletPicker, setShowWalletPicker] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [bridgeQuote, setBridgeQuote] = useState<any>(null);
   const [bridgeLoading, setBridgeLoading] = useState(false);
   const [allBridgeQuotes, setAllBridgeQuotes] = useState<any[]>([]);
-  // Source + Destination TX tracking
   const [srcTx, setSrcTx] = useState<{hash:string;chain:Chain}|null>(null);
   const [destTx, setDestTx] = useState<{hash:string;chain:Chain}|null>(null);
   const [srcStatus, setSrcStatus] = useState<"submitted"|"success"|"failed"|"timeout"|null>(null);
@@ -409,9 +417,8 @@ export default function CdsQuantumPage() {
     (window as any).ethereum.on("chainChanged",(hexId:string)=>{const id=parseInt(hexId,16);const chain=CHAINS.find(c=>c.id===id);if(chain){setFromChain(chain);setFromToken(DEFAULT_TOKENS[chain.id]?.[0]||DEFAULT_TOKENS[1][0]);setToToken(DEFAULT_TOKENS[chain.id]?.[1]||DEFAULT_TOKENS[1][1]);localStorage.setItem("cds_fromChain",chain.id.toString());setQuote(null);setAllQuotes([]);setSwapError("");}});
   },[]);
 
-  // Close wallet menu on outside click
   useEffect(()=>{
-    function handler(e:MouseEvent){if(walletMenuRef.current&&!walletMenuRef.current.contains(e.target as Node))setShowWalletMenu(false);}
+    function handler(e:MouseEvent){if(walletMenuRef.current&&!walletMenuRef.current.contains(e.target as Node)){setShowWalletMenu(false);}}
     document.addEventListener("mousedown",handler);
     return ()=>document.removeEventListener("mousedown",handler);
   },[]);
@@ -506,22 +513,19 @@ export default function CdsQuantumPage() {
   function formatVolume(v: number){const b=200000+v;if(b>=1e9)return "$"+(b/1e9).toFixed(2)+"B";if(b>=1e6)return "$"+(b/1e6).toFixed(2)+"M";return "$"+(b/1e3).toFixed(1)+"K";}
   function formatTxCount(n: number){const b=12000+n;if(b>=1e6)return (b/1e6).toFixed(1)+"M";return (b/1e3).toFixed(1)+"K";}
 
-  async function connectWallet(){
+  // Open wallet picker modal
+  function openWalletPicker(){setShowWalletPicker(true);setShowWalletMenu(false);}
+
+  async function connectWalletAuto(){
     if (typeof window!=="undefined"&&(window as any).ethereum){
-      try{const a=await (window as any).ethereum.request({method:"eth_requestAccounts"});if(a[0]){setWalletAddress(a[0]);setWalletConnected(true);setShowWalletMenu(false);}}
+      try{const a=await (window as any).ethereum.request({method:"eth_requestAccounts"});if(a[0]){setWalletAddress(a[0]);setWalletConnected(true);setShowWalletPicker(false);}}
       catch(e){console.error(e);}
     } else {alert("Please install MetaMask, Rabby or OKX Wallet!");}
   }
 
-  async function disconnectAndSwitch(){
-    // Disconnect current — then prompt new connection
-    setWalletConnected(false);
-    setWalletAddress("");
-    setBalances({});
-    setShowWalletMenu(false);
-    // Small delay then re-open wallet picker
-    await new Promise(r=>setTimeout(r,300));
-    await connectWallet();
+  // Connect after picking wallet (all use window.ethereum — wallet extension handles which one)
+  async function connectWalletPicked(){
+    await connectWalletAuto();
   }
 
   function disconnectWallet(){setWalletConnected(false);setWalletAddress("");setBalances({});setShowWalletMenu(false);}
@@ -631,7 +635,6 @@ export default function CdsQuantumPage() {
     const fromAmt=BigInt(Math.floor(parseFloat(amount)*Math.pow(10,fromToken.decimals))).toString();
     const walletAddr=walletAddress||INTEGRATOR_WALLET;
     const bridgeQuotes: any[]=[];
-
     const lifiUrl=`https://li.quest/v1/quote?fromChain=${fromChain.id}&toChain=${toChain.id}&fromToken=${fromToken.address}&toToken=${toToken.address}&fromAmount=${fromAmt}&fromAddress=${walletAddr}&toAddress=${walletAddr}&slippage=${Math.max(0,parseFloat(slippage)||0.5)/100}&integrator=cryptodropscout&order=RECOMMENDED`;
 
     await Promise.allSettled([
@@ -667,7 +670,7 @@ export default function CdsQuantumPage() {
   }
 
   async function executeSwap(){
-    if (!walletConnected){connectWallet();return;}
+    if (!walletConnected){openWalletPicker();return;}
     if (!quote){getSwapQuote();return;}
     setSwapError("");setSrcStatus(null);setSrcTx(null);setDestTx(null);setDestStatus(null);
     try {
@@ -676,7 +679,6 @@ export default function CdsQuantumPage() {
       let txParams: any=null;
       const walletAddr=walletAddress;
       const isNative=fromToken.address.toLowerCase()===NATIVE_ADDRESS.toLowerCase();
-
       if (quote.source==="KyberSwap"&&quote.txData){
         const spender=quote.routerAddress||quote.txData?.routerAddress;
         if (spender&&!isNative){const ok=await ensureApproval(fromToken.address,spender,sellAmountBig);if(!ok)return;}
@@ -698,11 +700,9 @@ export default function CdsQuantumPage() {
         if (spender&&!isNative){const ok=await ensureApproval(fromToken.address,spender,sellAmountBig);if(!ok)return;}
         txParams={from:walletAddr,to:d.transaction?.to,data:d.transaction?.data,value:d.transaction?.value||"0x0"};
       }
-
       if (!txParams?.to){setSwapError("Could not build transaction. Please try again.");return;}
       const txHash=await (window as any).ethereum.request({method:"eth_sendTransaction",params:[txParams]});
-      setSrcTx({hash:txHash,chain:fromChain});
-      setSrcStatus("submitted");
+      setSrcTx({hash:txHash,chain:fromChain});setSrcStatus("submitted");
       addTx(parseFloat(amount)*(TOKEN_PRICES[fromToken.symbol.toUpperCase()]||1));
       waitForReceipt(fromChain.rpc,txHash,40).then(async(status)=>{setSrcStatus(status);if(status==="success"){await refreshTokenBalance(fromToken);await refreshTokenBalance(toToken);setTimeout(()=>fetchBalances(),3000);}});
     } catch(e:any){
@@ -712,7 +712,7 @@ export default function CdsQuantumPage() {
   }
 
   async function executeBridge(){
-    if (!walletConnected){connectWallet();return;}
+    if (!walletConnected){openWalletPicker();return;}
     if (!bridgeQuote){getBridgeQuote();return;}
     if (fromChain.id===toChain.id){setSwapError("Select different chains for bridge.");return;}
     setSwapError("");setSrcStatus(null);setSrcTx(null);setDestTx(null);setDestStatus(null);
@@ -722,7 +722,6 @@ export default function CdsQuantumPage() {
       const sellAmountBig=BigInt(Math.floor(parseFloat(amount)*Math.pow(10,fromToken.decimals)));
       const isNative=fromToken.address.toLowerCase()===NATIVE_ADDRESS.toLowerCase();
       let activeQuote=bridgeQuote;
-
       if (activeQuote.approvalAddress&&!isNative){
         const ok=await ensureApproval(fromToken.address,activeQuote.approvalAddress,sellAmountBig);
         if (!ok) return;
@@ -740,45 +739,25 @@ export default function CdsQuantumPage() {
           setBridgeLoading(false);
         }
       }
-
       const txParams=normalizeTxRequest(activeQuote.txData,walletAddress);
       if (!txParams?.to){setSwapError("Bridge transaction data not available. Try again.");return;}
-
       const txHash=await (window as any).ethereum.request({method:"eth_sendTransaction",params:[txParams]});
-      setSrcTx({hash:txHash,chain:fromChain});
-      setSrcStatus("submitted");
+      setSrcTx({hash:txHash,chain:fromChain});setSrcStatus("submitted");
       addTx(parseFloat(amount)*(TOKEN_PRICES[fromToken.symbol.toUpperCase()]||1));
-
-      // Track source tx confirmation
-      waitForReceipt(fromChain.rpc,txHash,40).then(status=>{
-        setSrcStatus(status);
-        if (status==="success") setTimeout(()=>fetchBalances(),3000);
-      });
-
-      // Track destination tx
+      waitForReceipt(fromChain.rpc,txHash,40).then(status=>{setSrcStatus(status);if(status==="success")setTimeout(()=>fetchBalances(),3000);});
       setDestStatus("pending");
       const savedToChain=toChain;
-
       if (activeQuote.source==="LI.FI"){
         pollLifiStatus(txHash,fromChain.id,toChain.id,40).then(result=>{
-          if (result.destTxHash){
-            setDestTx({hash:result.destTxHash,chain:savedToChain});
-            setDestStatus("success");
-          } else {
-            setDestStatus(result.status==="FAILED"?"failed":"timeout");
-          }
+          if (result.destTxHash){setDestTx({hash:result.destTxHash,chain:savedToChain});setDestStatus("success");}
+          else setDestStatus(result.status==="FAILED"?"failed":"timeout");
         });
       } else if (activeQuote.source==="Relay"&&activeQuote.relayRequestId){
         pollRelayStatus(activeQuote.relayRequestId,toChain.id,30).then(result=>{
-          if (result.destTxHash){
-            setDestTx({hash:result.destTxHash,chain:savedToChain});
-            setDestStatus("success");
-          } else {
-            setDestStatus(result.status==="FAILED"?"failed":"timeout");
-          }
+          if (result.destTxHash){setDestTx({hash:result.destTxHash,chain:savedToChain});setDestStatus("success");}
+          else setDestStatus(result.status==="FAILED"?"failed":"timeout");
         });
       }
-
     } catch(e:any){
       setBridgeLoading(false);
       setSwapError(e.code===4001?"Transaction rejected.":e.message||"Bridge failed.");
@@ -795,7 +774,6 @@ export default function CdsQuantumPage() {
     const [search,setSearch]=useState("");
     const [importResult,setImportResult]=useState<Token|null>(null);
     const [importLoading,setImportLoading]=useState(false);
-
     async function doSearch(addr:string){
       if(!addr||addr.length<10)return;
       setImportLoading(true);setImportResult(null);
@@ -803,79 +781,72 @@ export default function CdsQuantumPage() {
       try{const chain=CHAINS.find(c=>c.id===chainId)||CHAINS[0];const res=await rpcCall(chain.rpc,"eth_call",[{to:addr,data:"0x313ce567"},"latest"]);setImportResult({symbol:"TOKEN",name:"Custom Token",address:addr,decimals:parseInt(res,16)||18});}catch{setImportResult({symbol:"TOKEN",name:"Custom Token",address:addr,decimals:18});}
       setImportLoading(false);
     }
-
     const sorted=getSortedTokens(chainId,search);
     const currentChain=CHAINS.find(c=>c.id===chainId)||CHAINS[0];
     const featured=(DEFAULT_TOKENS[chainId]||DEFAULT_TOKENS[1]).slice(0,7);
-    const overlayStyle={position:"fixed" as const,inset:0,zIndex:50,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(15,23,42,.58)",backdropFilter:"blur(14px)",padding:16};
-    const modalStyle={width:"min(760px,100%)",maxHeight:"88vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",background:"#ffffff",color:"#0f172a",border:"1px solid #e2e8f0",borderRadius:24,boxShadow:"0 30px 90px rgba(15,23,42,.35)"};
-    const rowBase={width:"100%",display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:16,border:"1px solid transparent",background:"transparent",textAlign:"left" as const,cursor:"pointer",transition:"background .15s ease,border-color .15s ease"};
 
     return (
-      <div style={overlayStyle}>
-        <div style={modalStyle}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:16,padding:"20px 22px",borderBottom:"1px solid #eef2f7"}}>
-            <div style={{minWidth:0}}>
-              <h3 style={{margin:0,color:"#0f172a",fontSize:22,lineHeight:1.1,fontWeight:900,letterSpacing:"-.01em"}}>{title}</h3>
-              <div style={{marginTop:8,display:"flex",alignItems:"center",gap:8,color:"#64748b",fontSize:12,fontWeight:800}}>
-                <ChainLogo chain={currentChain} size={16}/><span>{currentChain.name}</span><span style={{color:"#cbd5e1"}}>/</span><span>{sorted.length} assets</span>
+      <div style={{position:"fixed",inset:0,zIndex:50,display:"flex",alignItems:"flex-end",justifyContent:"center",background:"rgba(0,0,0,0.7)",backdropFilter:"blur(8px)"}} onClick={onClose}>
+        <div style={{width:"100%",maxWidth:520,maxHeight:"90vh",display:"flex",flexDirection:"column",background:"#0f1629",border:"1px solid rgba(139,92,246,0.2)",borderRadius:"24px 24px 0 0",overflow:"hidden",boxShadow:"0 -20px 60px rgba(0,0,0,0.5)"}} onClick={e=>e.stopPropagation()}>
+          {/* Handle bar */}
+          <div style={{display:"flex",justifyContent:"center",padding:"10px 0 4px"}}>
+            <div style={{width:40,height:4,borderRadius:999,background:"rgba(255,255,255,0.2)"}}/>
+          </div>
+          {/* Header */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 20px 12px",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
+            <div>
+              <h3 style={{margin:0,color:"#fff",fontSize:18,fontWeight:900}}>{title}</h3>
+              <div style={{display:"flex",alignItems:"center",gap:6,marginTop:4,fontSize:12,color:"#6b7280",fontWeight:700}}>
+                <ChainLogo chain={currentChain} size={14}/><span>{currentChain.name}</span><span style={{color:"rgba(255,255,255,0.1)"}}>•</span><span>{sorted.length} assets</span>
               </div>
             </div>
-            <button onClick={onClose} aria-label="Close" style={{width:44,height:44,borderRadius:999,border:"1px solid #e2e8f0",background:"#f8fafc",color:"#475569",fontSize:18,fontWeight:900,cursor:"pointer"}}>✕</button>
+            <button onClick={onClose} style={{width:36,height:36,borderRadius:999,border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.06)",color:"#9ca3af",fontSize:16,fontWeight:900,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"minmax(0,230px) minmax(0,1fr)",minHeight:0,overflow:"hidden"}}>
-            <aside style={{background:"#f8fafc",borderRight:"1px solid #eef2f7",padding:16,display:"flex",flexDirection:"column",gap:12}}>
-              <div style={{background:"#fff",border:"1px solid #e5e7eb",borderRadius:18,padding:12}}>
-                <div style={{display:"flex",alignItems:"center",gap:12}}><ChainLogo chain={currentChain} size={34}/><div style={{minWidth:0}}><div style={{fontSize:11,fontWeight:900,color:"#94a3b8",textTransform:"uppercase",letterSpacing:.4}}>Network</div><div style={{fontSize:15,fontWeight:900,color:"#0f172a",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{currentChain.name}</div></div></div>
-              </div>
-              <div style={{background:"#fff",border:"1px solid #e5e7eb",borderRadius:18,padding:12}}>
-                <div style={{fontSize:11,fontWeight:900,color:"#94a3b8",textTransform:"uppercase",letterSpacing:.4,marginBottom:8}}>Popular</div>
-                <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                  {featured.slice(0,5).map(t=>(
-                    <button key={t.address} onClick={()=>{onSelect(t);onClose();}} style={{display:"flex",alignItems:"center",gap:9,width:"100%",padding:"8px 9px",borderRadius:13,border:"0",background:"transparent",cursor:"pointer",textAlign:"left"}} onMouseEnter={e=>e.currentTarget.style.background="#f1f5f9"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                      <TokenLogo token={t} size={24}/><span style={{fontSize:14,fontWeight:900,color:"#1e293b",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.symbol}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </aside>
-            <section style={{display:"flex",flexDirection:"column",minHeight:0,overflow:"hidden"}}>
-              <div style={{padding:"18px 20px 12px",borderBottom:"1px solid #eef2f7"}}>
-                <div style={{display:"flex",alignItems:"center",gap:12,padding:"13px 15px",borderRadius:18,background:"#f8fafc",border:"1px solid #e2e8f0"}}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.4"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                  <input type="text" placeholder="Search token or paste address" value={search} onChange={e=>{setSearch(e.target.value);if(e.target.value.startsWith("0x")&&e.target.value.length>=40)doSearch(e.target.value);else setImportResult(null);}} style={{flex:1,border:0,outline:"none",background:"transparent",color:"#0f172a",fontSize:15,minWidth:0}} autoFocus />
-                  {search&&<button onClick={()=>{setSearch("");setImportResult(null);}} style={{border:0,background:"transparent",color:"#64748b",fontWeight:900,cursor:"pointer"}}>Clear</button>}
-                </div>
-                {!search&&(
-                  <div style={{display:"flex",gap:8,overflowX:"auto",paddingTop:12,paddingBottom:2}}>
-                    {featured.map(t=>(
-                      <button key={t.address} onClick={()=>{onSelect(t);onClose();}} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",borderRadius:999,border:"1px solid #ddd6fe",background:"#f5f3ff",cursor:"pointer",whiteSpace:"nowrap"}}>
-                        <TokenLogo token={t} size={20}/><span style={{fontSize:12,fontWeight:900,color:"#0f172a"}}>{t.symbol}</span>
-                      </button>
-                    ))}
+          {/* Search */}
+          <div style={{padding:"12px 16px 8px"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",borderRadius:16,background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)"}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2.4"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input type="text" placeholder="Search token or paste address" value={search} onChange={e=>{setSearch(e.target.value);if(e.target.value.startsWith("0x")&&e.target.value.length>=40)doSearch(e.target.value);else setImportResult(null);}} style={{flex:1,border:0,outline:"none",background:"transparent",color:"#fff",fontSize:14,minWidth:0}} autoFocus/>
+              {search&&<button onClick={()=>{setSearch("");setImportResult(null);}} style={{border:0,background:"transparent",color:"#6b7280",fontWeight:900,cursor:"pointer",fontSize:13}}>✕</button>}
+            </div>
+          </div>
+          {/* Quick pick chips */}
+          {!search&&(
+            <div style={{padding:"4px 16px 10px",display:"flex",gap:8,overflowX:"auto"}}>
+              {featured.map(t=>(
+                <button key={t.address} onClick={()=>{onSelect(t);onClose();}} style={{display:"flex",alignItems:"center",gap:6,padding:"6px 12px",borderRadius:999,border:"1px solid rgba(139,92,246,0.3)",background:"rgba(139,92,246,0.1)",cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>
+                  <TokenLogo token={t} size={18}/><span style={{fontSize:12,fontWeight:900,color:"#e2e8f0"}}>{t.symbol}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          {/* Import */}
+          {importLoading&&<p style={{margin:"0 16px 8px",textAlign:"center",fontSize:12,fontWeight:700,color:"#a78bfa",padding:"8px",background:"rgba(139,92,246,0.08)",borderRadius:12}}>Searching token...</p>}
+          {importResult&&!importLoading&&(
+            <div style={{margin:"0 16px 10px",padding:"12px 14px",borderRadius:16,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,background:"rgba(245,158,11,0.08)",border:"1px solid rgba(245,158,11,0.25)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,minWidth:0}}><TokenLogo token={importResult} size={38}/><div style={{minWidth:0}}><p style={{margin:0,fontSize:14,fontWeight:900,color:"#fff"}}>{importResult.symbol}</p><p style={{margin:0,fontSize:11,color:"#6b7280",fontFamily:"monospace",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{importResult.address.slice(0,14)}...</p></div></div>
+              <button onClick={()=>{setCustomTokens(prev=>({...prev,[chainId]:[...(prev[chainId]||[]).filter(t=>t.address!==importResult.address),importResult]}));onSelect(importResult);onClose();}} style={{border:0,borderRadius:12,padding:"9px 16px",background:"linear-gradient(135deg,#7c3aed,#2563eb)",color:"#fff",fontSize:12,fontWeight:900,cursor:"pointer",flexShrink:0}}>Import</button>
+            </div>
+          )}
+          {/* Token list */}
+          <div style={{flex:1,overflowY:"auto",padding:"4px 8px 16px"}}>
+            {sorted.length===0&&!importResult&&(<div style={{padding:"48px 16px",textAlign:"center"}}><p style={{margin:0,fontSize:14,fontWeight:700,color:"#9ca3af"}}>No tokens found</p><p style={{margin:"6px 0 0",fontSize:12,color:"#4b5563"}}>Paste a contract address to import.</p></div>)}
+            {sorted.map(token=>{
+              const bal=getBalance(token);const hasBal=parseFloat(bal)>0;
+              return(
+                <button key={token.address} onClick={()=>{onSelect(token);onClose();}} style={{width:"100%",display:"flex",alignItems:"center",gap:12,padding:"10px 12px",borderRadius:14,border:"1px solid transparent",background:"transparent",textAlign:"left",cursor:"pointer",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.borderColor="rgba(255,255,255,0.06)";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor="transparent";}}>
+                  <TokenLogo token={token} size={40}/>
+                  <div style={{flex:1,minWidth:0}}>
+                    <p style={{margin:0,fontSize:14,fontWeight:900,color:"#f1f5f9",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{token.symbol}</p>
+                    <p style={{margin:"2px 0 0",fontSize:12,color:"#6b7280",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{token.name}</p>
                   </div>
-                )}
-              </div>
-              {importLoading&&<p style={{margin:0,padding:"12px 20px",textAlign:"center",fontSize:12,fontWeight:900,color:"#7c3aed"}}>Searching token...</p>}
-              {importResult&&!importLoading&&(
-                <div style={{margin:"12px 20px 0",padding:12,borderRadius:18,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,background:"#fffbeb",border:"1px solid #fde68a"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:12,minWidth:0}}><TokenLogo token={importResult} size={42}/><div style={{minWidth:0}}><p style={{margin:0,fontSize:14,fontWeight:900,color:"#0f172a"}}>{importResult.symbol}</p><p style={{margin:0,fontSize:12,color:"#64748b",fontFamily:"monospace",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{importResult.address.slice(0,12)}...{importResult.address.slice(-6)}</p></div></div>
-                  <button onClick={()=>{setCustomTokens(prev=>({...prev,[chainId]:[...(prev[chainId]||[]).filter(t=>t.address!==importResult.address),importResult]}));onSelect(importResult);onClose();}} style={{border:0,borderRadius:12,padding:"9px 14px",background:"linear-gradient(135deg,#7c3aed,#2563eb)",color:"#fff",fontSize:12,fontWeight:900,cursor:"pointer"}}>Import</button>
-                </div>
-              )}
-              <div style={{flex:1,overflowY:"auto",padding:"12px 14px 16px"}}>
-                {sorted.length===0&&!importResult&&(<div style={{padding:"58px 16px",textAlign:"center"}}><p style={{margin:0,fontSize:14,fontWeight:900,color:"#0f172a"}}>No tokens found</p><p style={{margin:"6px 0 0",fontSize:12,color:"#64748b"}}>Paste a contract address to import a custom token.</p></div>)}
-                <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                  {sorted.map(token=>{const bal=getBalance(token);const hasBal=parseFloat(bal)>0;return(
-                    <button key={token.address} onClick={()=>{onSelect(token);onClose();}} style={rowBase} onMouseEnter={e=>{e.currentTarget.style.background="#f8fafc";e.currentTarget.style.borderColor="#e2e8f0";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor="transparent";}}>
-                      <TokenLogo token={token} size={42}/>
-                      <div style={{flex:1,minWidth:0}}><p style={{margin:0,fontSize:15,fontWeight:900,color:"#0f172a",lineHeight:1.15,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{token.symbol}</p><div style={{display:"flex",alignItems:"center",gap:8,marginTop:3}}><p style={{margin:0,fontSize:12,color:"#64748b",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{token.name}</p><p style={{margin:0,fontSize:11,color:"#94a3b8",fontFamily:"monospace"}}>{token.address.slice(0,6)}...{token.address.slice(-4)}</p></div></div>
-                      <div style={{textAlign:"right",flexShrink:0}}>{balanceLoading?<div style={{width:64,height:16,borderRadius:999,background:"#e2e8f0"}}/>:<p style={{margin:0,fontSize:14,fontWeight:900,color:hasBal?"#0f172a":"#cbd5e1",fontVariantNumeric:"tabular-nums"}}>{hasBal?bal:"0"}</p>}<p style={{margin:"3px 0 0",fontSize:10,color:"#94a3b8"}}>{token.symbol}</p></div>
-                    </button>
-                  );})}
-                </div>
-              </div>
-            </section>
+                  <div style={{textAlign:"right",flexShrink:0}}>
+                    {balanceLoading?<div style={{width:52,height:14,borderRadius:999,background:"rgba(255,255,255,0.08)",animation:"pulse 1.5s infinite"}}/>:<p style={{margin:0,fontSize:14,fontWeight:900,color:hasBal?"#f1f5f9":"#374151"}}>{hasBal?bal:"0"}</p>}
+                    <p style={{margin:"2px 0 0",fontSize:10,color:"#4b5563"}}>{token.symbol}</p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -883,23 +854,53 @@ export default function CdsQuantumPage() {
   };
 
   const ChainModal=({onSelect,onClose,selectedId}:{onSelect:(c:Chain)=>void;onClose:()=>void;selectedId:number})=>(
-    <div style={{position:"fixed",inset:0,zIndex:50,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(15,23,42,.58)",backdropFilter:"blur(14px)",padding:16}}>
-      <div style={{width:"min(560px,100%)",maxHeight:"86vh",overflow:"hidden",background:"#fff",color:"#0f172a",border:"1px solid #e2e8f0",borderRadius:24,boxShadow:"0 30px 90px rgba(15,23,42,.35)"}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:16,padding:"20px 22px",borderBottom:"1px solid #eef2f7"}}>
-          <div><h3 style={{margin:0,fontSize:22,lineHeight:1.1,fontWeight:900,color:"#0f172a"}}>Select Network</h3><p style={{margin:"7px 0 0",fontSize:12,fontWeight:700,color:"#64748b"}}>Choose the chain you want to use.</p></div>
-          <button onClick={onClose} aria-label="Close" style={{width:44,height:44,borderRadius:999,border:"1px solid #e2e8f0",background:"#f8fafc",color:"#475569",fontSize:18,fontWeight:900,cursor:"pointer"}}>✕</button>
+    <div style={{position:"fixed",inset:0,zIndex:50,display:"flex",alignItems:"flex-end",justifyContent:"center",background:"rgba(0,0,0,0.7)",backdropFilter:"blur(8px)"}} onClick={onClose}>
+      <div style={{width:"100%",maxWidth:520,maxHeight:"85vh",background:"#0f1629",border:"1px solid rgba(139,92,246,0.2)",borderRadius:"24px 24px 0 0",overflow:"hidden",boxShadow:"0 -20px 60px rgba(0,0,0,0.5)"}} onClick={e=>e.stopPropagation()}>
+        <div style={{display:"flex",justifyContent:"center",padding:"10px 0 4px"}}><div style={{width:40,height:4,borderRadius:999,background:"rgba(255,255,255,0.2)"}}/></div>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 20px 14px",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
+          <div><h3 style={{margin:0,fontSize:18,fontWeight:900,color:"#fff"}}>Select Network</h3><p style={{margin:"4px 0 0",fontSize:12,color:"#6b7280",fontWeight:600}}>{CHAINS.length} networks available</p></div>
+          <button onClick={onClose} style={{width:36,height:36,borderRadius:999,border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.06)",color:"#9ca3af",fontSize:16,fontWeight:900,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
         </div>
-        <div style={{maxHeight:"calc(86vh - 86px)",overflowY:"auto",padding:16}}>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:8}}>
+        <div style={{maxHeight:"calc(85vh - 90px)",overflowY:"auto",padding:12}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:8}}>
             {CHAINS.map(chain=>(
-              <button key={chain.id} onClick={()=>{onSelect(chain);onClose();}} style={{display:"flex",alignItems:"center",gap:12,padding:12,borderRadius:18,textAlign:"left",cursor:"pointer",background:selectedId===chain.id?"#f5f3ff":"transparent",border:`1px solid ${selectedId===chain.id?"#c4b5fd":"transparent"}`,boxShadow:selectedId===chain.id?"0 10px 24px rgba(109,40,217,.10)":"none"}} onMouseEnter={e=>{if(selectedId!==chain.id){e.currentTarget.style.background="#f8fafc";e.currentTarget.style.borderColor="#e2e8f0";}}} onMouseLeave={e=>{if(selectedId!==chain.id){e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor="transparent";}}}>
-                <ChainLogo chain={chain} size={38}/>
-                <div style={{flex:1,minWidth:0}}><p style={{margin:0,fontSize:14,fontWeight:900,color:"#0f172a",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{chain.name}</p><p style={{margin:"3px 0 0",fontSize:12,color:"#64748b"}}>{chain.symbol}</p></div>
-                {selectedId===chain.id&&(<div style={{width:28,height:28,borderRadius:999,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:900,color:"#fff",background:"linear-gradient(135deg,#7c3aed,#2563eb)"}}>✓</div>)}
+              <button key={chain.id} onClick={()=>{onSelect(chain);onClose();}} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:16,textAlign:"left",cursor:"pointer",background:selectedId===chain.id?"rgba(139,92,246,0.15)":"rgba(255,255,255,0.03)",border:`1px solid ${selectedId===chain.id?"rgba(139,92,246,0.4)":"rgba(255,255,255,0.06)"}`,transition:"all .15s"}} onMouseEnter={e=>{if(selectedId!==chain.id){e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.borderColor="rgba(255,255,255,0.1)";}}} onMouseLeave={e=>{if(selectedId!==chain.id){e.currentTarget.style.background="rgba(255,255,255,0.03)";e.currentTarget.style.borderColor="rgba(255,255,255,0.06)";}}} >
+                <ChainLogo chain={chain} size={34}/>
+                <div style={{flex:1,minWidth:0}}><p style={{margin:0,fontSize:13,fontWeight:900,color:"#f1f5f9",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{chain.name}</p><p style={{margin:"2px 0 0",fontSize:11,color:"#6b7280"}}>{chain.symbol}</p></div>
+                {selectedId===chain.id&&<div style={{width:24,height:24,borderRadius:999,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:"#fff",background:"linear-gradient(135deg,#7c3aed,#2563eb)",flexShrink:0}}>✓</div>}
               </button>
             ))}
           </div>
         </div>
+      </div>
+    </div>
+  );
+
+  // Wallet Picker Modal
+  const WalletPickerModal=()=>(
+    <div style={{position:"fixed",inset:0,zIndex:60,display:"flex",alignItems:"flex-end",justifyContent:"center",background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)"}} onClick={()=>setShowWalletPicker(false)}>
+      <div style={{width:"100%",maxWidth:420,background:"#0f1629",border:"1px solid rgba(139,92,246,0.25)",borderRadius:"24px 24px 0 0",overflow:"hidden",boxShadow:"0 -20px 60px rgba(0,0,0,0.6)",paddingBottom:20}} onClick={e=>e.stopPropagation()}>
+        <div style={{display:"flex",justifyContent:"center",padding:"10px 0 4px"}}><div style={{width:40,height:4,borderRadius:999,background:"rgba(255,255,255,0.2)"}}/></div>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 20px 16px",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
+          <div>
+            <h3 style={{margin:0,color:"#fff",fontSize:18,fontWeight:900}}>Connect Wallet</h3>
+            <p style={{margin:"4px 0 0",fontSize:12,color:"#6b7280",fontWeight:600}}>Choose your wallet to continue</p>
+          </div>
+          <button onClick={()=>setShowWalletPicker(false)} style={{width:36,height:36,borderRadius:999,border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.06)",color:"#9ca3af",fontSize:16,fontWeight:900,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+        </div>
+        <div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:8}}>
+          {WALLET_OPTIONS.map(w=>(
+            <button key={w.id} onClick={connectWalletPicked} style={{display:"flex",alignItems:"center",gap:14,padding:"14px 16px",borderRadius:16,border:"1px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.04)",cursor:"pointer",textAlign:"left",transition:"all .15s",width:"100%"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(139,92,246,0.12)";e.currentTarget.style.borderColor="rgba(139,92,246,0.3)";}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.borderColor="rgba(255,255,255,0.08)";}}>
+              <span style={{fontSize:28,flexShrink:0}}>{w.icon}</span>
+              <div style={{flex:1}}>
+                <p style={{margin:0,fontSize:15,fontWeight:900,color:"#f1f5f9"}}>{w.name}</p>
+                <p style={{margin:"2px 0 0",fontSize:11,color:"#6b7280"}}>Browser Extension</p>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          ))}
+        </div>
+        <p style={{margin:"4px 16px 0",fontSize:11,color:"#4b5563",textAlign:"center"}}>By connecting, you agree to our Terms of Service</p>
       </div>
     </div>
   );
@@ -910,25 +911,29 @@ export default function CdsQuantumPage() {
 
   return (
     <main className="min-h-screen text-white" style={{fontFamily:"'DM Sans',system-ui,sans-serif",background:"#050a18"}}>
+      {/* Premium background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div style={{position:"absolute",top:-300,left:-200,width:700,height:700,background:"radial-gradient(circle,rgba(109,40,217,0.18),transparent 65%)"}}/>
-        <div style={{position:"absolute",bottom:-300,right:-200,width:700,height:700,background:"radial-gradient(circle,rgba(37,99,235,0.15),transparent 65%)"}}/>
-        <div style={{position:"absolute",top:"40%",left:"50%",transform:"translate(-50%,-50%)",width:500,height:500,background:"radial-gradient(circle,rgba(6,182,212,0.08),transparent 65%)"}}/>
-        <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(139,92,246,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,0.03) 1px,transparent 1px)",backgroundSize:"40px 40px"}}/>
+        <div style={{position:"absolute",top:-300,left:-200,width:800,height:800,background:"radial-gradient(circle,rgba(109,40,217,0.22),transparent 65%)"}}/>
+        <div style={{position:"absolute",bottom:-300,right:-200,width:800,height:800,background:"radial-gradient(circle,rgba(37,99,235,0.18),transparent 65%)"}}/>
+        <div style={{position:"absolute",top:"35%",left:"50%",transform:"translate(-50%,-50%)",width:600,height:600,background:"radial-gradient(circle,rgba(6,182,212,0.1),transparent 65%)"}}/>
+        <div style={{position:"absolute",top:"70%",right:"10%",width:400,height:400,background:"radial-gradient(circle,rgba(236,72,153,0.07),transparent 65%)"}}/>
+        <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(139,92,246,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,0.04) 1px,transparent 1px)",backgroundSize:"44px 44px"}}/>
       </div>
 
       {/* NAVBAR */}
-      <nav className="relative z-50 sticky top-0" style={{background:"rgba(5,10,24,0.9)",backdropFilter:"blur(20px)",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
+      <nav className="relative z-50 sticky top-0" style={{background:"rgba(5,10,24,0.88)",backdropFilter:"blur(24px)",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 group">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm transition group-hover:scale-105" style={{background:"linear-gradient(135deg,#7c3aed,#2563eb)"}}>C</div>
             <span className="font-black text-lg tracking-tight" style={{background:"linear-gradient(90deg,#a78bfa,#60a5fa)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>CryptoDropScout</span>
           </Link>
+
           <div className="hidden md:flex items-center gap-6">
-            <Link href="/" className="text-gray-400 hover:text-white transition text-sm font-medium">Home</Link>
+            {/* Home with color */}
+            <Link href="/" className="text-sm font-bold transition hover:opacity-80" style={{background:"linear-gradient(90deg,#a78bfa,#60a5fa)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Home</Link>
           </div>
 
-          {/* Wallet button with dropdown */}
+          {/* Wallet */}
           <div className="hidden md:block relative" ref={walletMenuRef}>
             {walletConnected ? (
               <>
@@ -943,20 +948,14 @@ export default function CdsQuantumPage() {
                       <p className="text-xs text-gray-400 font-semibold mb-0.5">Connected Wallet</p>
                       <p className="text-sm font-black text-white">{shortAddress(walletAddress)}</p>
                     </div>
-                    <button onClick={()=>{navigator.clipboard.writeText(walletAddress);}} className="w-full px-4 py-3 text-left text-sm font-semibold text-gray-300 hover:bg-white/5 transition flex items-center gap-2">
-                      📋 Copy Address
-                    </button>
-                    <button onClick={disconnectAndSwitch} className="w-full px-4 py-3 text-left text-sm font-semibold text-violet-300 hover:bg-violet-500/10 transition flex items-center gap-2">
-                      🔄 Switch Wallet
-                    </button>
-                    <button onClick={disconnectWallet} className="w-full px-4 py-3 text-left text-sm font-semibold text-red-400 hover:bg-red-500/10 transition flex items-center gap-2" style={{borderTop:"1px solid rgba(255,255,255,0.06)"}}>
-                      🔌 Disconnect
-                    </button>
+                    <button onClick={()=>{navigator.clipboard.writeText(walletAddress);setShowWalletMenu(false);}} className="w-full px-4 py-3 text-left text-sm font-semibold text-gray-300 hover:bg-white/5 transition flex items-center gap-2">📋 Copy Address</button>
+                    <button onClick={()=>{disconnectWallet();setTimeout(()=>setShowWalletPicker(true),200);}} className="w-full px-4 py-3 text-left text-sm font-semibold transition flex items-center gap-2" style={{color:"#a78bfa"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(139,92,246,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>🔄 Switch Wallet</button>
+                    <button onClick={disconnectWallet} className="w-full px-4 py-3 text-left text-sm font-semibold text-red-400 transition flex items-center gap-2" style={{borderTop:"1px solid rgba(255,255,255,0.06)"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(239,68,68,0.08)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>🔌 Disconnect</button>
                   </div>
                 )}
               </>
             ) : (
-              <button onClick={connectWallet} className="flex px-4 py-2.5 rounded-xl font-bold text-sm transition items-center gap-2" style={{background:"linear-gradient(135deg,#7c3aed,#2563eb)",color:"white",boxShadow:"0 4px 15px rgba(124,58,237,0.3)"}}>
+              <button onClick={openWalletPicker} className="flex px-4 py-2.5 rounded-xl font-bold text-sm transition items-center gap-2 hover:opacity-90 active:scale-95" style={{background:"linear-gradient(135deg,#7c3aed,#2563eb)",color:"white",boxShadow:"0 4px 15px rgba(124,58,237,0.3)"}}>
                 Connect Wallet
               </button>
             )}
@@ -964,16 +963,16 @@ export default function CdsQuantumPage() {
 
           <div className="md:hidden flex items-center gap-2">
             {walletConnected?(
-              <button onClick={disconnectWallet} className="px-3 py-2 rounded-xl font-bold text-xs" style={{background:"rgba(34,197,94,0.1)",border:"1px solid rgba(34,197,94,0.25)",color:"#4ade80"}}>{shortAddress(walletAddress)}</button>
+              <button onClick={()=>{disconnectWallet();setTimeout(()=>setShowWalletPicker(true),200);}} className="px-3 py-2 rounded-xl font-bold text-xs" style={{background:"rgba(34,197,94,0.1)",border:"1px solid rgba(34,197,94,0.25)",color:"#4ade80"}}>{shortAddress(walletAddress)}</button>
             ):(
-              <button onClick={connectWallet} className="px-3 py-2 rounded-xl font-bold text-xs" style={{background:"linear-gradient(135deg,#7c3aed,#2563eb)"}}>Connect</button>
+              <button onClick={openWalletPicker} className="px-3 py-2 rounded-xl font-bold text-xs" style={{background:"linear-gradient(135deg,#7c3aed,#2563eb)"}}>Connect</button>
             )}
             <button onClick={()=>setMobileMenuOpen(!mobileMenuOpen)} className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-gray-300" style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)"}}>☰</button>
           </div>
         </div>
         {mobileMenuOpen&&(
           <div className="md:hidden px-4 py-3" style={{borderTop:"1px solid rgba(255,255,255,0.06)",background:"rgba(5,10,24,0.95)"}}>
-            <Link href="/" className="block py-2.5 text-gray-400 hover:text-white text-sm font-medium">Home</Link>
+            <Link href="/" className="block py-2.5 text-sm font-bold" style={{background:"linear-gradient(90deg,#a78bfa,#60a5fa)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Home</Link>
           </div>
         )}
       </nav>
@@ -991,7 +990,7 @@ export default function CdsQuantumPage() {
       </div>
 
       {/* MAIN CARD */}
-      <div className="relative z-10 max-w-[480px] mx-auto px-4 pb-6">
+      <div className="relative z-10 w-full max-w-[480px] mx-auto px-3 sm:px-4 pb-6">
         <div className="flex gap-1.5 mb-4 p-1 rounded-2xl" style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)"}}>
           <button onClick={()=>{setActiveTab("swap");setQuote(null);setAllQuotes([]);setSwapError("");setSrcStatus(null);setSrcTx(null);setDestTx(null);setDestStatus(null);}} className="flex-1 py-3 rounded-xl font-bold text-sm transition"
             style={activeTab==="swap"?{background:"linear-gradient(135deg,#7c3aed,#2563eb)",color:"white",boxShadow:"0 4px 16px rgba(124,58,237,0.35)"}:{color:"#6b7280"}}>Swap</button>
@@ -999,104 +998,104 @@ export default function CdsQuantumPage() {
             style={activeTab==="bridge"?{background:"linear-gradient(135deg,#7c3aed,#2563eb)",color:"white",boxShadow:"0 4px 16px rgba(124,58,237,0.35)"}:{color:"#6b7280"}}>Bridge</button>
         </div>
 
-        <div className="rounded-3xl p-5 shadow-2xl" style={{background:"linear-gradient(145deg,#0c1426,#0a1020)",border:"1px solid rgba(139,92,246,0.15)",boxShadow:"0 20px 60px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.05)"}}>
+        <div className="rounded-3xl p-4 sm:p-5 shadow-2xl" style={{background:"linear-gradient(145deg,#0c1426,#0a1020)",border:"1px solid rgba(139,92,246,0.15)",boxShadow:"0 20px 60px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.05)"}}>
 
           {activeTab==="bridge"&&(
             <div className="flex items-center gap-2 mb-4">
-              <button onClick={()=>setShowFromChainModal(true)} className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl font-semibold text-sm transition hover:opacity-80" style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)"}}>
-                <ChainLogo chain={fromChain} size={20}/><span className="truncate flex-1 text-left text-white">{fromChain.name}</span><ChevronDown/>
+              <button onClick={()=>setShowFromChainModal(true)} className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl font-semibold text-sm hover:opacity-80" style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)"}}>
+                <ChainLogo chain={fromChain} size={18}/><span className="truncate flex-1 text-left text-white text-xs sm:text-sm">{fromChain.name}</span><ChevronDown/>
               </button>
-              <button onClick={()=>{const t=fromChain;setFromChain(toChain);setToChain(t);setBridgeQuote(null);setAllBridgeQuotes([]);setSwapError("");}} className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-gray-400 hover:text-white transition flex-shrink-0" style={{background:"rgba(139,92,246,0.1)",border:"1px solid rgba(139,92,246,0.2)"}}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M8 3L4 7l4 4M16 21l4-4-4-4M4 7h16M20 17H4"/></svg>
+              <button onClick={()=>{const t=fromChain;setFromChain(toChain);setToChain(t);setBridgeQuote(null);setAllBridgeQuotes([]);setSwapError("");}} className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-gray-400 hover:text-white flex-shrink-0" style={{background:"rgba(139,92,246,0.1)",border:"1px solid rgba(139,92,246,0.2)"}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M8 3L4 7l4 4M16 21l4-4-4-4M4 7h16M20 17H4"/></svg>
               </button>
-              <button onClick={()=>setShowToChainModal(true)} className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl font-semibold text-sm transition hover:opacity-80" style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)"}}>
-                <ChainLogo chain={toChain} size={20}/><span className="truncate flex-1 text-left text-white">{toChain.name}</span><ChevronDown/>
+              <button onClick={()=>setShowToChainModal(true)} className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl font-semibold text-sm hover:opacity-80" style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)"}}>
+                <ChainLogo chain={toChain} size={18}/><span className="truncate flex-1 text-left text-white text-xs sm:text-sm">{toChain.name}</span><ChevronDown/>
               </button>
             </div>
           )}
 
           {/* FROM */}
-          <div className="rounded-2xl p-4 mb-2" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)"}}>
+          <div className="rounded-2xl p-3 sm:p-4 mb-2" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)"}}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">You Pay</span>
               {activeTab==="swap"&&(
-                <button onClick={()=>setShowFromChainModal(true)} className="flex items-center gap-1.5 text-xs font-semibold transition rounded-lg px-2 py-1 hover:opacity-80" style={{background:"rgba(139,92,246,0.1)",color:"#a78bfa",border:"1px solid rgba(139,92,246,0.2)"}}>
-                  <ChainLogo chain={fromChain} size={12}/>{fromChain.name}<ChevronDown/>
+                <button onClick={()=>setShowFromChainModal(true)} className="flex items-center gap-1.5 text-xs font-semibold rounded-lg px-2 py-1 hover:opacity-80" style={{background:"rgba(139,92,246,0.1)",color:"#a78bfa",border:"1px solid rgba(139,92,246,0.2)"}}>
+                  <ChainLogo chain={fromChain} size={11}/>{fromChain.name}<ChevronDown/>
                 </button>
               )}
             </div>
             {walletConnected&&(
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-gray-500">Balance:</span>
                   <span className="text-xs font-bold text-white">{balanceLoading?<span className="inline-block w-12 h-2.5 rounded bg-white/10 animate-pulse"/>:`${getBalance(fromToken)} ${fromToken.symbol}`}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   {[25,50,75,100].map(pct=>(
-                    <button key={pct} onClick={()=>setAmountPercent(pct)} className="px-2 py-1 rounded-lg text-[11px] font-black transition hover:scale-105 active:scale-95" style={{background:"linear-gradient(135deg,rgba(124,58,237,0.15),rgba(37,99,235,0.15))",border:"1px solid rgba(124,58,237,0.3)",color:"#a78bfa"}}>
+                    <button key={pct} onClick={()=>setAmountPercent(pct)} className="px-1.5 sm:px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-black transition hover:scale-105 active:scale-95" style={{background:"linear-gradient(135deg,rgba(124,58,237,0.15),rgba(37,99,235,0.15))",border:"1px solid rgba(124,58,237,0.3)",color:"#a78bfa"}}>
                       {pct===100?"MAX":`${pct}%`}
                     </button>
                   ))}
                 </div>
               </div>
             )}
-            <div className="flex items-center gap-3">
-              <input type="number" placeholder="0.00" value={amount} onChange={e=>setAmount(e.target.value)} className="flex-1 bg-transparent text-3xl font-black outline-none placeholder-gray-800 min-w-0 text-white" min="0" style={{letterSpacing:"-0.02em"}}/>
-              <button onClick={()=>setShowFromTokenModal(true)} className="flex items-center gap-2 px-3 py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap flex-shrink-0 transition hover:opacity-80 active:scale-95" style={{background:"rgba(139,92,246,0.15)",border:"1px solid rgba(139,92,246,0.3)"}}>
-                <TokenLogo token={fromToken} size={26}/><span className="text-white font-black">{fromToken.symbol}</span><ChevronDown/>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <input type="number" placeholder="0.00" value={amount} onChange={e=>setAmount(e.target.value)} className="flex-1 bg-transparent text-2xl sm:text-3xl font-black outline-none placeholder-gray-800 min-w-0 text-white" min="0" style={{letterSpacing:"-0.02em"}}/>
+              <button onClick={()=>setShowFromTokenModal(true)} className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap flex-shrink-0 hover:opacity-80 active:scale-95" style={{background:"rgba(139,92,246,0.15)",border:"1px solid rgba(139,92,246,0.3)"}}>
+                <TokenLogo token={fromToken} size={22}/><span className="text-white font-black text-xs sm:text-sm">{fromToken.symbol}</span><ChevronDown/>
               </button>
             </div>
           </div>
 
           <div className="flex justify-center my-2">
-            <button onClick={()=>{const t=fromToken;setFromToken(toToken);setToToken(t);setQuote(null);setAllQuotes([]);setBridgeQuote(null);setAllBridgeQuotes([]);setSwapError("");setSrcStatus(null);setSrcTx(null);setDestTx(null);setDestStatus(null);}} className="w-10 h-10 rounded-2xl flex items-center justify-center transition hover:scale-110 active:scale-95" style={{background:"rgba(139,92,246,0.12)",border:"1px solid rgba(139,92,246,0.25)"}}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+            <button onClick={()=>{const t=fromToken;setFromToken(toToken);setToToken(t);setQuote(null);setAllQuotes([]);setBridgeQuote(null);setAllBridgeQuotes([]);setSwapError("");setSrcStatus(null);setSrcTx(null);setDestTx(null);setDestStatus(null);}} className="w-9 h-9 rounded-2xl flex items-center justify-center transition hover:scale-110 active:scale-95" style={{background:"rgba(139,92,246,0.12)",border:"1px solid rgba(139,92,246,0.25)"}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
             </button>
           </div>
 
           {/* TO */}
-          <div className="rounded-2xl p-4 mb-4" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)"}}>
+          <div className="rounded-2xl p-3 sm:p-4 mb-4" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)"}}>
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">You Receive</span>
               <div className="flex items-center gap-1.5 text-xs font-semibold rounded-lg px-2 py-1" style={{background:"rgba(255,255,255,0.05)",color:"#6b7280"}}>
-                <ChainLogo chain={activeTab==="bridge"?toChain:fromChain} size={12}/>
-                {activeTab==="bridge"?toChain.name:fromChain.name}
+                <ChainLogo chain={activeTab==="bridge"?toChain:fromChain} size={11}/>
+                <span className="hidden sm:inline">{activeTab==="bridge"?toChain.name:fromChain.name}</span>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <div className="flex-1 min-w-0">
                 {quoteLoading||bridgeLoading?(
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-32 rounded-xl animate-pulse" style={{background:"rgba(139,92,246,0.15)"}}/>
-                    <span className="text-xs text-violet-400 animate-pulse">Finding best rate...</span>
+                    <div className="h-7 w-28 rounded-xl animate-pulse" style={{background:"rgba(139,92,246,0.15)"}}/>
+                    <span className="text-xs text-violet-400 animate-pulse hidden sm:inline">Finding best rate...</span>
                   </div>
                 ):(
-                  <span className="text-3xl font-black tracking-tight" style={{color:(quote?.buyAmount||bridgeQuote?.toAmount)?"white":"#374151",letterSpacing:"-0.02em"}}>
+                  <span className="text-2xl sm:text-3xl font-black tracking-tight" style={{color:(quote?.buyAmount||bridgeQuote?.toAmount)?"white":"#374151",letterSpacing:"-0.02em"}}>
                     {quote?.buyAmount||bridgeQuote?.toAmount||"0.00"}
                   </span>
                 )}
               </div>
-              <button onClick={()=>setShowToTokenModal(true)} className="flex items-center gap-2 px-3 py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap flex-shrink-0 transition hover:opacity-80 active:scale-95" style={{background:"rgba(139,92,246,0.15)",border:"1px solid rgba(139,92,246,0.3)"}}>
-                <TokenLogo token={toToken} size={26}/><span className="text-white font-black">{toToken.symbol}</span><ChevronDown/>
+              <button onClick={()=>setShowToTokenModal(true)} className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap flex-shrink-0 hover:opacity-80 active:scale-95" style={{background:"rgba(139,92,246,0.15)",border:"1px solid rgba(139,92,246,0.3)"}}>
+                <TokenLogo token={toToken} size={22}/><span className="text-white font-black text-xs sm:text-sm">{toToken.symbol}</span><ChevronDown/>
               </button>
             </div>
           </div>
 
-          {/* Swap rate comparison */}
+          {/* Rate comparison */}
           {activeTab==="swap"&&allQuotes.length>0&&!quoteLoading&&(
             <div className="mb-4">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">Rate Comparison</p>
+              <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">Rate Comparison</p>
               <div className="space-y-1.5">
                 {allQuotes.map((q,i)=>(
                   <button key={q.source} onClick={()=>setQuote(q)} className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs transition active:scale-[0.99]"
                     style={{background:quote?.source===q.source?"rgba(139,92,246,0.15)":"rgba(255,255,255,0.03)",border:`1px solid ${quote?.source===q.source?"rgba(139,92,246,0.4)":"rgba(255,255,255,0.06)"}`}}>
-                    <div className="flex items-center gap-1.5 flex-1">
-                      {i===0&&<span className="text-yellow-400">★</span>}
-                      <span className="font-black text-white">{q.source}</span>
-                      {i===0&&<span className="text-[10px] px-1.5 py-0.5 rounded-full font-black" style={{background:"rgba(34,197,94,0.15)",color:"#4ade80",border:"1px solid rgba(34,197,94,0.25)"}}>BEST</span>}
+                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                      {i===0&&<span className="text-yellow-400 flex-shrink-0">★</span>}
+                      <span className="font-black text-white truncate">{q.source}</span>
+                      {i===0&&<span className="text-[10px] px-1.5 py-0.5 rounded-full font-black flex-shrink-0" style={{background:"rgba(34,197,94,0.15)",color:"#4ade80",border:"1px solid rgba(34,197,94,0.25)"}}>BEST</span>}
                     </div>
-                    <span className="font-black text-green-400 tabular-nums">{q.buyAmount}</span>
-                    <span className="text-gray-600 text-[10px]">{q.gasUsd}</span>
+                    <span className="font-black text-green-400 tabular-nums flex-shrink-0 text-[11px]">{q.buyAmount}</span>
+                    <span className="text-gray-600 text-[10px] flex-shrink-0 hidden sm:inline">{q.gasUsd}</span>
                   </button>
                 ))}
               </div>
@@ -1106,18 +1105,18 @@ export default function CdsQuantumPage() {
           {/* Bridge routes */}
           {activeTab==="bridge"&&allBridgeQuotes.length>0&&!bridgeLoading&&(
             <div className="mb-4">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">Bridge Routes</p>
+              <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">Bridge Routes</p>
               <div className="space-y-1.5">
                 {allBridgeQuotes.map((q,i)=>(
                   <button key={q.source} onClick={()=>setBridgeQuote(q)} className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs transition active:scale-[0.99]"
                     style={{background:bridgeQuote?.source===q.source?"rgba(139,92,246,0.15)":"rgba(255,255,255,0.03)",border:`1px solid ${bridgeQuote?.source===q.source?"rgba(139,92,246,0.4)":"rgba(255,255,255,0.06)"}`}}>
-                    <div className="flex items-center gap-1.5 flex-1">
-                      {i===0&&<span className="text-yellow-400">★</span>}
-                      <span className="font-black text-white">{q.source}</span>
-                      {i===0&&<span className="text-[10px] px-1.5 py-0.5 rounded-full font-black" style={{background:"rgba(34,197,94,0.15)",color:"#4ade80",border:"1px solid rgba(34,197,94,0.25)"}}>BEST</span>}
+                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                      {i===0&&<span className="text-yellow-400 flex-shrink-0">★</span>}
+                      <span className="font-black text-white truncate">{q.source}</span>
+                      {i===0&&<span className="text-[10px] px-1.5 py-0.5 rounded-full font-black flex-shrink-0" style={{background:"rgba(34,197,94,0.15)",color:"#4ade80",border:"1px solid rgba(34,197,94,0.25)"}}>BEST</span>}
                     </div>
-                    <span className="font-black text-green-400 tabular-nums">{q.toAmount}</span>
-                    {q.estimatedTime&&<span className="text-gray-500 text-[10px]">~{Math.ceil(q.estimatedTime/60)}min</span>}
+                    <span className="font-black text-green-400 tabular-nums flex-shrink-0 text-[11px]">{q.toAmount}</span>
+                    {q.estimatedTime&&<span className="text-gray-500 text-[10px] flex-shrink-0 hidden sm:inline">~{Math.ceil(q.estimatedTime/60)}min</span>}
                   </button>
                 ))}
               </div>
@@ -1126,22 +1125,20 @@ export default function CdsQuantumPage() {
 
           {/* Quote info */}
           {(quote||bridgeQuote)&&!quoteLoading&&!bridgeLoading&&(
-            <div className="rounded-2xl p-3.5 mb-4" style={{background:"rgba(139,92,246,0.08)",border:"1px solid rgba(139,92,246,0.18)"}}>
+            <div className="rounded-2xl p-3 sm:p-3.5 mb-4" style={{background:"rgba(139,92,246,0.08)",border:"1px solid rgba(139,92,246,0.18)"}}>
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between"><span className="text-gray-400">Best Route via</span><span className="font-black text-violet-300">{quote?.source||bridgeQuote?.source}</span></div>
                 {bridgeQuote?.tool&&<div className="flex justify-between"><span className="text-gray-400">Bridge Protocol</span><span className="font-semibold text-white">{bridgeQuote.tool}</span></div>}
                 {bridgeQuote?.estimatedTime&&<div className="flex justify-between"><span className="text-gray-400">Estimated Time</span><span className="font-semibold text-white">{Math.ceil(bridgeQuote.estimatedTime/60)} min</span></div>}
                 {bridgeQuote?.feeCost&&<div className="flex justify-between"><span className="text-gray-400">Bridge Fee</span><span className="font-semibold text-white">~${parseFloat(bridgeQuote.feeCost).toFixed(3)}</span></div>}
-                <div className="flex justify-between pt-1" style={{borderTop:"1px solid rgba(255,255,255,0.06)"}}>
-                  <span className="text-gray-400">Platform Fee</span><span className="font-black text-green-400">100% FREE ✓</span>
-                </div>
+                <div className="flex justify-between pt-1" style={{borderTop:"1px solid rgba(255,255,255,0.06)"}}><span className="text-gray-400">Platform Fee</span><span className="font-black text-green-400">100% FREE ✓</span></div>
               </div>
             </div>
           )}
 
           {approving&&(
             <div className="rounded-2xl p-3 mb-4 flex items-center gap-3" style={{background:"rgba(245,158,11,0.08)",border:"1px solid rgba(245,158,11,0.25)"}}>
-              <div className="w-5 h-5 rounded-full border-2 border-yellow-400 border-t-transparent animate-spin flex-shrink-0"/>
+              <div className="w-4 h-4 rounded-full border-2 border-yellow-400 border-t-transparent animate-spin flex-shrink-0"/>
               <p className="text-xs text-yellow-300 font-semibold">Approving token — confirm in your wallet</p>
             </div>
           )}
@@ -1153,13 +1150,12 @@ export default function CdsQuantumPage() {
             </div>
           )}
 
-          {/* ── Dual TX Tracker ── */}
+          {/* TX Tracker */}
           {srcTx&&srcStatus&&(
             <div className="rounded-2xl mb-4 overflow-hidden" style={{border:"1px solid rgba(139,92,246,0.2)",background:"rgba(15,23,42,0.6)"}}>
-              {/* Source TX */}
-              <div className="px-4 py-3 flex items-center justify-between gap-2" style={{borderBottom:destTx||destStatus?"1px solid rgba(255,255,255,0.06)":"none"}}>
+              <div className="px-3 sm:px-4 py-3 flex items-center justify-between gap-2" style={{borderBottom:destTx||destStatus?"1px solid rgba(255,255,255,0.06)":"none"}}>
                 <div className="flex items-center gap-2 min-w-0">
-                  <ChainLogo chain={srcTx.chain} size={18}/>
+                  <ChainLogo chain={srcTx.chain} size={16}/>
                   <div className="min-w-0">
                     <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{srcTx.chain.name} (Source)</p>
                     <div className="flex items-center gap-1.5 mt-0.5">
@@ -1172,11 +1168,10 @@ export default function CdsQuantumPage() {
                   {srcTx.hash.slice(0,6)}...{srcTx.hash.slice(-4)} ↗
                 </a>
               </div>
-              {/* Destination TX */}
               {(destStatus||destTx)&&(
-                <div className="px-4 py-3 flex items-center justify-between gap-2">
+                <div className="px-3 sm:px-4 py-3 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <ChainLogo chain={toChain} size={18}/>
+                    <ChainLogo chain={toChain} size={16}/>
                     <div className="min-w-0">
                       <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{toChain.name} (Destination)</p>
                       <div className="flex items-center gap-1.5 mt-0.5">
@@ -1205,7 +1200,7 @@ export default function CdsQuantumPage() {
             {showSlippage&&(
               <div className="flex gap-1.5">
                 {["0.1","0.5","1.0","3.0"].map(s=>(
-                  <button key={s} onClick={()=>{setSlippage(s);setShowSlippage(false);}} className="px-2.5 py-1.5 rounded-xl text-xs font-black transition"
+                  <button key={s} onClick={()=>{setSlippage(s);setShowSlippage(false);}} className="px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-black transition"
                     style={{background:slippage===s?"linear-gradient(135deg,#7c3aed,#2563eb)":"rgba(255,255,255,0.06)",color:slippage===s?"white":"#6b7280",border:`1px solid ${slippage===s?"transparent":"rgba(255,255,255,0.08)"}`}}>
                     {s}%
                   </button>
@@ -1227,26 +1222,27 @@ export default function CdsQuantumPage() {
       </div>
 
       {/* STATS */}
-      <div className="relative z-10 max-w-[480px] mx-auto px-4 pb-12">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-2xl p-5 text-center" style={{background:"linear-gradient(145deg,#0c1426,#0a1020)",border:"1px solid rgba(255,255,255,0.07)"}}>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">Total Transactions</p>
-            <p className="text-3xl font-black tabular-nums" style={{background:"linear-gradient(90deg,#a78bfa,#60a5fa)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{formatTxCount(txCount)}</p>
+      <div className="relative z-10 w-full max-w-[480px] mx-auto px-3 sm:px-4 pb-12">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          <div className="rounded-2xl p-4 sm:p-5 text-center" style={{background:"linear-gradient(145deg,#0c1426,#0a1020)",border:"1px solid rgba(255,255,255,0.07)"}}>
+            <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">Total Transactions</p>
+            <p className="text-2xl sm:text-3xl font-black tabular-nums" style={{background:"linear-gradient(90deg,#a78bfa,#60a5fa)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{formatTxCount(txCount)}</p>
           </div>
-          <div className="rounded-2xl p-5 text-center" style={{background:"linear-gradient(145deg,#0c1426,#0a1020)",border:"1px solid rgba(255,255,255,0.07)"}}>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">Total Volume</p>
-            <p className="text-3xl font-black tabular-nums" style={{background:"linear-gradient(90deg,#60a5fa,#34d399)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{formatVolume(volume)}</p>
+          <div className="rounded-2xl p-4 sm:p-5 text-center" style={{background:"linear-gradient(145deg,#0c1426,#0a1020)",border:"1px solid rgba(255,255,255,0.07)"}}>
+            <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">Total Volume</p>
+            <p className="text-2xl sm:text-3xl font-black tabular-nums" style={{background:"linear-gradient(90deg,#60a5fa,#34d399)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{formatVolume(volume)}</p>
           </div>
         </div>
       </div>
 
+      {/* FOOTER */}
       <footer className="relative z-10 px-4 py-8" style={{borderTop:"1px solid rgba(255,255,255,0.06)"}}>
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-gray-600 text-sm">© 2026 CryptoDropScout. All rights reserved.</p>
           <div className="flex items-center gap-5 flex-wrap justify-center">
-            <a href="https://t.me/CryptoDropScoutt" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-white transition text-sm">Telegram</a>
-            <a href="https://x.com/cryptodrpscout" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-white transition text-sm">Twitter</a>
-            <a href="https://github.com/Hunterkak/cryptodropscout" target="_blank" rel="noreferrer" className="text-gray-500 hover:text-white transition text-sm">GitHub</a>
+            <a href="https://t.me/CryptoDropScoutt" target="_blank" rel="noreferrer" className="text-sm font-bold transition hover:scale-105" style={{background:"linear-gradient(90deg,#22d3ee,#06b6d4)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>✈ Telegram</a>
+            <a href="https://x.com/cryptodrpscout" target="_blank" rel="noreferrer" className="text-sm font-bold transition hover:scale-105" style={{background:"linear-gradient(90deg,#e2e8f0,#94a3b8)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>𝕏 Twitter</a>
+            <a href="https://github.com/Hunterkak/cryptodropscout" target="_blank" rel="noreferrer" className="text-sm font-bold transition hover:scale-105" style={{background:"linear-gradient(90deg,#4ade80,#22c55e)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>⌥ GitHub</a>
           </div>
         </div>
       </footer>
@@ -1255,6 +1251,7 @@ export default function CdsQuantumPage() {
       {showToTokenModal&&<TokenModal onSelect={t=>{setToToken(t);setQuote(null);setAllQuotes([]);setSwapError("");setSrcStatus(null);setSrcTx(null);}} onClose={()=>setShowToTokenModal(false)} title="Select Token" chainId={activeTab==="bridge"?toChain.id:fromChain.id}/>}
       {showFromChainModal&&<ChainModal onSelect={c=>{setFromChain(c);setFromToken(DEFAULT_TOKENS[c.id]?.[0]||DEFAULT_TOKENS[1][0]);setToToken(DEFAULT_TOKENS[c.id]?.[1]||DEFAULT_TOKENS[1][1]);setQuote(null);setAllQuotes([]);setSwapError("");setSrcStatus(null);setSrcTx(null);setTimeout(()=>fetchBalances(),300);}} onClose={()=>setShowFromChainModal(false)} selectedId={fromChain.id}/>}
       {showToChainModal&&<ChainModal onSelect={c=>{setToChain(c);setToToken(DEFAULT_TOKENS[c.id]?.[0]||DEFAULT_TOKENS[1][0]);setBridgeQuote(null);setAllBridgeQuotes([]);setSwapError("");}} onClose={()=>setShowToChainModal(false)} selectedId={toChain.id}/>}
+      {showWalletPicker&&<WalletPickerModal/>}
     </main>
   );
 }
