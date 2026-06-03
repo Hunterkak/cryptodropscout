@@ -14,10 +14,10 @@ export default function ToolsPage() {
 
   const tools = [
     {
-      title: "CDS Nexus",
-      description: "Premium multi-chain swap & bridge aggregator powered by 0x, LI.FI and Socket.",
+      title: "CDS Quantum",
+      description: "Seamlessly connect, swap and bridge assets across EVM, Solana, Bitcoin, TON, SUI and Aptos.",
       icon: "🌉",
-      href: "/tools/dex-bridge",
+      href: "/tools/cds-quantum",
       modal: false,
     },
     {
